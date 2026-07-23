@@ -31,7 +31,7 @@ const projectSchema = z
 
 type ProjectFormValues = z.infer<typeof projectSchema>
 
-const statusOptions = ['Open', 'On Hold', 'Completed']
+const statusOptions = ['Open', 'Completed', 'Cancelled']
 const projectTypeOptions = ['Internal', 'External', 'Maintenance', 'Renovation', 'Other']
 const priorityOptions = ['Low', 'Medium', 'High']
 
