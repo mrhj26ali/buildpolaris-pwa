@@ -1,8 +1,16 @@
+export type TaskStatus =
+  | 'Open'
+  | 'Working'
+  | 'Pending Review'
+  | 'Overdue'
+  | 'Completed'
+  | 'Cancelled'
+
 export interface TaskRecord {
   name: string
   subject: string
   project: string
-  status: string
+  status: TaskStatus
   priority: string
   exp_start_date: string
   exp_end_date: string
@@ -18,7 +26,7 @@ export interface TaskRecord {
 export interface CreateTaskPayload {
   subject: string
   project: string
-  status: string
+  status: TaskStatus
   priority: string
   exp_start_date: string
   exp_end_date: string

@@ -3,7 +3,7 @@ import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors, us
 import type { TaskRecord } from './types'
 import { useUpdateTaskStatus } from './hooks'
 
-const statusColumns = ['Open', 'In Progress', 'Review', 'Done']
+const statusColumns = ['Open', 'Working', 'Pending Review', 'Overdue', 'Completed', 'Cancelled']
 
 interface KanbanViewProps {
   projectId: string
