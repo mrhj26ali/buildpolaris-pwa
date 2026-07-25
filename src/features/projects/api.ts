@@ -9,8 +9,9 @@ export async function listProjects(): Promise<ProjectRecord[]> {
 }
 
 export async function listProjectTemplates(): Promise<ProjectTemplateRecord[]> {
+  // FIX: Changed fields from ["name","project_template_name"] to ["name","project_type"]
   const res = await apiRequest<{ data: ProjectTemplateRecord[] }>(
-    '/resource/Project%20Template?fields=["name","project_template_name"]&limit_page_length=0'
+    '/resource/Project%20Template?fields=["name","project_type"]&limit_page_length=0'
   )
   return res.data
 }

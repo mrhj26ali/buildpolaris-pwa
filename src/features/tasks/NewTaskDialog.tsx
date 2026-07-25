@@ -32,7 +32,7 @@ interface NewTaskDialogProps {
 
 type NewTaskFormValues = z.infer<typeof taskSchema>
 
-const statusOptions = ['Open', 'In Progress', 'Review', 'Done']
+const statusOptions = ['Open', 'Working', 'Pending Review', 'Overdue', 'Completed', 'Cancelled']
 const priorityOptions = ['Low', 'Medium', 'High']
 const typeOptions = ['Tiling', 'Painting', 'Plastering', 'Blockwork', 'Other']
 
