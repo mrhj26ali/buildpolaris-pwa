@@ -110,7 +110,8 @@ export function NewProjectPage() {
                 <option value="">No template</option>
                 {templates?.map((template) => (
                   <option key={template.name} value={template.name}>
-                    {template.project_template_name || template.name}
+                    {/* FIX: Changed from template.project_template_name to template.name */}
+                    {template.name}
                   </option>
                 ))}
               </select>

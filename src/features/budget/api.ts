@@ -3,7 +3,7 @@ import type { BudgetRecord, CreateBudgetPayload, ProjectReference, ProjectVarian
 
 export async function listBudgetRecords(): Promise<BudgetRecord[]> {
   const res = await apiRequest<{ data: BudgetRecord[] }>(
-    '/resource/Budget?fields=["name","project","cost_center","budget_type","budget_amount","fiscal_year"]&limit_page_length=0'
+    '/resource/Budget?fields=["name","company","budget_against","project","cost_center","fiscal_year","accounts"]&limit_page_length=0'
   )
   return res.data
 }
@@ -34,9 +34,8 @@ export async function listProcurementForProject(projectName?: string): Promise<P
   const filterQuery = projectName
     ? `&filters=${encodeURIComponent(JSON.stringify([['project', '=', projectName]]))}`
     : ''
-
   const res = await apiRequest<{ data: ProcurementRecord[] }>(
-    `/resource/Material Request?fields=["name","status","transaction_date","supplier","rounded_total","project","material_request_type"]${filterQuery}&limit_page_length=0`
+    `/resource/Material Request?fields=["name","status","transaction_date","project","material_request_type"]${filterQuery}&limit_page_length=0`
   )
   return res.data
 }

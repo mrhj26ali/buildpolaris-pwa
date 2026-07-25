@@ -10,9 +10,10 @@ export interface ProjectRecord {
   project_template?: string
 }
 
+// FIX: Removed project_template_name, added project_type to match native ERPNext schema
 export interface ProjectTemplateRecord {
   name: string
-  project_template_name: string
+  project_type?: string
 }
 
 export interface CreateProjectPayload {

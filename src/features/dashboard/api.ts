@@ -13,7 +13,7 @@ export async function fetchDashboardSummary(): Promise<DashboardSummary> {
       `/resource/Project?fields=${encodeFields(['name', 'status'])}&limit_page_length=${MAX_FETCH}`
     ),
     apiRequest<{ data: Array<{ name: string; status?: string; creation?: string; project?: string }> }>(
-      `/resource/Request?fields=${encodeFields(['name', 'status', 'creation', 'project'])}&limit_page_length=${MAX_FETCH}`
+      `/resource/Project%20Request?fields=${encodeFields(['name', 'status', 'creation', 'project'])}&limit_page_length=${MAX_FETCH}`
     ),
     apiRequest<{ data: Array<{ name: string; status?: string }> }>(
       `/resource/Task?fields=${encodeFields(['name', 'status'])}&limit_page_length=${MAX_FETCH}`
@@ -21,10 +21,10 @@ export async function fetchDashboardSummary(): Promise<DashboardSummary> {
   ])
 
   const activeProjects = projectsRes.data.length
-  const openRequests = requestsRes.data.filter((item) => item.status && !['Closed', 'Resolved', 'Completed'].includes(item.status)).length
-  const pendingApprovals = requestsRes.data.filter((item) => item.status === 'Pending').length
-  const openTasks = tasksRes.data.filter((item) => item.status && !['Closed', 'Completed'].includes(item.status)).length
-
+  const openRequests = requestsRes.data.filter((item) => item.status && !['Closed', 'Answered', 'Approved', 'Rejected'].includes(item.status)).length
+  const pendingApprovals = requestsRes.data.filter((item) => item.status === 'Open' || item.status === 'Under Review').length
+  const openTasks = tasksRes.data.filter((item) => item.status && !['Completed', 'Cancelled'].includes(item.status)).length
+  
   const recentActivity = requestsRes.data.slice(0, 5).map((item) => ({
     name: item.name,
     status: item.status,
