@@ -10,6 +10,9 @@ import { BudgetPage } from '@/features/budget/BudgetPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
 import { SearchPage } from '@/features/search/SearchPage'
 import { AdminPage } from '@/features/admin/AdminPage'
+import { DailyLogPage } from '@/features/field/DailyLogPage'
+import { RequestsPage } from '@/features/requests/RequestsPage'
+import { PunchListPage } from '@/features/punch-list/PunchListPage'
 import { NotFoundPage } from './NotFoundPage'
 
 export const router = createBrowserRouter([
@@ -28,6 +31,9 @@ export const router = createBrowserRouter([
           { path: '/reports', element: <ReportsPage /> },
           { path: '/search', element: <SearchPage /> },
           { path: '/admin', element: <AdminPage /> },
+          { path: '/field', element: <DailyLogPage /> },
+          { path: '/requests', element: <RequestsPage /> },
+          { path: '/punch-list', element: <PunchListPage /> },
         ],
       },
     ],
