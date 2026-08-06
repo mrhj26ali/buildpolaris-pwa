@@ -7,8 +7,10 @@ import {
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/projects', label: 'Projects', icon: FolderKanban },
-  { to: '/documents', label: 'Documents', icon: FileText },
+  { to: '/field', label: 'Daily Logs', icon: ClipboardList },
+  { to: '/punch-list', label: 'Punch List', icon: ClipboardList },
   { to: '/requests', label: 'Requests', icon: ClipboardList },
+  { to: '/documents', label: 'Documents', icon: FileText },
   { to: '/budget', label: 'Budget', icon: Wallet },
   { to: '/reports', label: 'Reports', icon: BarChart3 },
   { to: '/search', label: 'Search', icon: Search },
