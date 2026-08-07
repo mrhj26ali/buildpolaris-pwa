@@ -1,58 +1,76 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
-import { BffApiError } from '@/lib/bffClient' // <-- CHANGED from apiClient
+import { BffApiError } from '@/lib/bffClient'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
 export function LoginPage() {
-  const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { login } = useAuth()
+  const successMessage = (location.state as { message?: string } | null)?.message
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setIsLoading(true)
     try {
       await login(email, password)
       navigate('/dashboard')
-    } catch (err: unknown) { // <-- ADDED TYPE for strict TS
-      if (err instanceof BffApiError && err.serverMessage?.toLowerCase().includes('disabled')) {
-        setError('Account is disabled. Please contact support.')
+    } catch (err: unknown) {
+      if (err instanceof BffApiError) {
+        setError(err.status === 401 ? 'Invalid credentials.' : (err.serverMessage ?? 'Login failed.'))
       } else {
-        setError('Invalid credentials or account disabled.')
+        setError('Login failed.')
       }
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface-base">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-xl bg-surface-card p-8 shadow-sm border border-surface-border">
-        <h1 className="text-2xl font-bold text-brand-900 mb-6 text-center">BuildPolaris</h1>
-        {error && <p className="text-red-600 text-sm mb-4 text-center">{error}</p>}
-        <div className="space-y-4">
-          <input 
-            type="email" 
-            placeholder="Email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-surface-border px-3 py-2 text-sm outline-none focus:border-brand-500" 
-            required 
-          />
- an
-          <input 
-            type="password" 
-            placeholder="Password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-surface-border px-3 py-2 text-sm outline-none focus:border-brand-500" 
-            required 
-          />
-          <button type="submit" className="w-full rounded-lg bg-brand-500 text-white py-2 text-sm font-medium hover:bg-brand-600 transition">
-            Sign In
-          </button>
-        </div>
-      </form>
+    <div className="flex min-h-screen items-center justify-center bg-surface-base p-4">
+      <Card className="w-full max-w-sm shadow-lg">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-brand-900">BuildPolaris</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {successMessage && (
+              <div className="rounded-md border border-green-200 bg-green-100 p-3 text-sm text-green-700">
+                {successMessage}
+              </div>
+            )}
+            {error && (
+              <div className="rounded-md border border-red-200 bg-red-100 p-3 text-sm text-red-700">{error}</div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" placeholder="john@acme.com" value={email}
+                onChange={(e) => setEmail(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" placeholder="••••••••" value={password}
+                onChange={(e) => setPassword(e.target.value)} required />
+            </div>
+            <Button type="submit" className="w-full bg-brand-500 hover:bg-brand-600" disabled={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign In'}
+            </Button>
+            <p className="text-center text-sm text-gray-600">
+              Don't have a workspace?{' '}
+              <Link to="/register" className="font-medium text-brand-500 hover:underline">Create one</Link>
+            </p>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   )
 }

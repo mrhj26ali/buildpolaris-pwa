@@ -17,31 +17,31 @@ export default defineConfig({
         background_color: '#f8fafc',
         display: 'standalone',
         icons: [
-  {
-    src: '/icons/manifest-icon-192.maskable.png',
-    sizes: '192x192',
-    type: 'image/png',
-    purpose: 'any',
-  },
-  {
-    src: '/icons/manifest-icon-192.maskable.png',
-    sizes: '192x192',
-    type: 'image/png',
-    purpose: 'maskable',
-  },
-  {
-    src: '/icons/manifest-icon-512.maskable.png',
-    sizes: '512x512',
-    type: 'image/png',
-    purpose: 'any',
-  },
-  {
-    src: '/icons/manifest-icon-512.maskable.png',
-    sizes: '512x512',
-    type: 'image/png',
-    purpose: 'maskable',
-  },
-],
+          {
+            src: '/icons/manifest-icon-192.maskable.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/manifest-icon-192.maskable.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
+            src: '/icons/manifest-icon-512.maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/manifest-icon-512.maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
       },
     }),
   ],
@@ -53,7 +53,27 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': { target: 'http://localhost:8000', changeOrigin: true },
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        headers: {
+          Host: 'polaris.local', // THIS FIXES THE HOST HEADER ISSUE
+        },
+      },
+      '/files': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        headers: {
+          Host: 'polaris.local',
+        },
+      },
+      '/media': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+        headers: {
+          Host: 'polaris.local',
+        },
+      },
     },
   },
 })

@@ -1,42 +1,57 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { getSessionContext, loginRequest, logoutRequest } from './api'
+import { clearCsrfToken } from '@/lib/bffClient'
+import type { User } from '@/types/auth'
 
-interface User { email: string; fullName: string; roles: string[] }
 interface AuthContextValue {
-  user: User | null;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  user: User | null
+  isLoading: boolean
+  login: (email: string, password: string) => Promise<void>
+  logout: () => Promise<void>
+  refresh: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  async function refresh() {
+    try {
+      setUser(await getSessionContext())
+    } catch {
+      setUser(null)
+    }
+  }
 
   useEffect(() => {
-    // Stubbed for chore branch. Will connect to BFF in implementation phase.
-    setIsLoading(false); 
-  }, []);
+    refresh().finally(() => setIsLoading(false))
+  }, [])
 
   async function login(email: string, password: string) {
-    console.log('Login stubbed', email, password);
-    setUser({ email, fullName: email, roles: ['Admin'] });
+    await loginRequest({ usr: email, pwd: password })
+    await refresh()
   }
 
   async function logout() {
-    setUser(null);
+    try {
+      await logoutRequest()
+    } finally {
+      clearCsrfToken()
+      setUser(null)
+    }
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, refresh }}>
       {children}
     </AuthContext.Provider>
-  );
+  )
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  return ctx
 }
