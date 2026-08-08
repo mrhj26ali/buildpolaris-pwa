@@ -16,9 +16,18 @@ function RoleCheckboxes({
   return (
     <div className="space-y-2">
       {roles.map((r) => (
-        <label key={r.role} className="flex items-start gap-2 rounded-md border border-surface-border p-2 hover:bg-brand-50">
-          <input type="checkbox" className="mt-1" checked={selected.includes(r.role)}
-            onChange={() => onToggle(r.role)} />
+        <label
+          key={r.role}
+          className={`flex cursor-pointer items-start gap-2 rounded-md border p-2 transition-colors hover:bg-brand-50 ${
+            selected.includes(r.role) ? 'border-brand-500 bg-brand-50' : 'border-surface-border'
+          }`}
+        >
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={selected.includes(r.role)}
+            onChange={() => onToggle(r.role)}
+          />
           <span>
             <span className="block text-sm font-medium">{r.role.replace('BuildPolaris ', '')}</span>
             <span className="block text-xs text-gray-500">{r.description}</span>
@@ -45,27 +54,8 @@ export function UsersPage() {
   }
 
   useEffect(() => {
-    let cancelled = false
-
-    async function loadData() {
-      try {
-        const [loadedUsers, loadedRoles] = await Promise.all([listUsers(), availableRoles()])
-        if (!cancelled) {
-          setUsers(loadedUsers)
-          setRoles(loadedRoles)
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load users.')
-        }
-      }
-    }
-
-    loadData()
-
-    return () => {
-      cancelled = true
-    }
+    reload()
+    availableRoles().then(setRoles)
   }, [])
 
   const toggleRole = (role: string) =>
@@ -192,12 +182,16 @@ export function UsersPage() {
         </CardContent>
       </Card>
 
+      {/* ───────────────── Invite User Modal (FIXED LAYOUT) ───────────────── */}
       {inviteOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader><CardTitle className="text-base">Invite User</CardTitle></CardHeader>
-            <CardContent>
-              <form onSubmit={submitInvite} className="space-y-4">
+          <Card className="flex max-h-[90vh] w-full max-w-lg flex-col">
+            <CardHeader className="shrink-0">
+              <CardTitle className="text-base">Invite User</CardTitle>
+            </CardHeader>
+            <form onSubmit={submitInvite} className="flex min-h-0 flex-1 flex-col">
+              {/* Scrollable body */}
+              <CardContent className="min-h-0 flex-1 space-y-4 overflow-y-auto pb-2">
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 <div className="space-y-2">
                   <Label>Full name</Label>
@@ -209,36 +203,54 @@ export function UsersPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Roles (check all that apply)</Label>
-                  <RoleCheckboxes roles={roles} selected={selectedRoles} onToggle={toggleRole} />
+                  <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+                    <RoleCheckboxes roles={roles} selected={selectedRoles} onToggle={toggleRole} />
+                  </div>
                 </div>
-                <div className="flex justify-end gap-2">
+              </CardContent>
+              {/* Pinned footer — buttons ALWAYS visible */}
+              <div className="flex shrink-0 items-center justify-between gap-2 border-t border-surface-border px-6 py-4">
+                <span className="text-xs text-gray-500">
+                  {selectedRoles.length} role{selectedRoles.length === 1 ? '' : 's'} selected
+                </span>
+                <div className="flex gap-2">
                   <Button type="button" variant="outline" onClick={() => setInviteOpen(false)}>Cancel</Button>
                   <Button type="submit" className="bg-brand-500" disabled={busy || selectedRoles.length === 0}>
                     {busy ? 'Inviting...' : 'Send Invite'}
                   </Button>
                 </div>
-              </form>
-            </CardContent>
+              </div>
+            </form>
           </Card>
         </div>
       )}
 
+      {/* ───────────────── Edit Roles Modal (same fixed layout) ───────────────── */}
       {editUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader><CardTitle className="text-base">Edit roles — {editUser.full_name}</CardTitle></CardHeader>
-            <CardContent>
-              <form onSubmit={submitEditRoles} className="space-y-4">
+          <Card className="flex max-h-[90vh] w-full max-w-lg flex-col">
+            <CardHeader className="shrink-0">
+              <CardTitle className="text-base">Edit roles — {editUser.full_name}</CardTitle>
+            </CardHeader>
+            <form onSubmit={submitEditRoles} className="flex min-h-0 flex-1 flex-col">
+              <CardContent className="min-h-0 flex-1 space-y-2 overflow-y-auto pb-2">
                 {error && <p className="text-sm text-red-600">{error}</p>}
-                <RoleCheckboxes roles={roles} selected={selectedRoles} onToggle={toggleRole} />
-                <div className="flex justify-end gap-2">
+                <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
+                  <RoleCheckboxes roles={roles} selected={selectedRoles} onToggle={toggleRole} />
+                </div>
+              </CardContent>
+              <div className="flex shrink-0 items-center justify-between gap-2 border-t border-surface-border px-6 py-4">
+                <span className="text-xs text-gray-500">
+                  {selectedRoles.length} role{selectedRoles.length === 1 ? '' : 's'} selected
+                </span>
+                <div className="flex gap-2">
                   <Button type="button" variant="outline" onClick={() => setEditUser(null)}>Cancel</Button>
                   <Button type="submit" className="bg-brand-500" disabled={busy || selectedRoles.length === 0}>
                     {busy ? 'Saving...' : 'Save Roles'}
                   </Button>
                 </div>
-              </form>
-            </CardContent>
+              </div>
+            </form>
           </Card>
         </div>
       )}
