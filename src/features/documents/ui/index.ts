@@ -1,0 +1,1 @@
+export { DocumentRegister } from './DocumentRegister';

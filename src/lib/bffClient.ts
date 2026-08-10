@@ -62,7 +62,9 @@ export async function bffRequest<T>(
   if (options.method && options.method !== 'GET' && options.method !== 'HEAD') {
     try {
       headers.set('X-Frappe-CSRF-Token', await getCsrfToken());
-    } catch (e) { /* Ignore CSRF fetch errors in dev */ }
+    } catch {
+      /* Ignore CSRF fetch errors in dev */
+    }
   }
 
   let res: Response;
@@ -72,7 +74,7 @@ export async function bffRequest<T>(
       headers, 
       ...options 
     });
-  } catch (networkError) {
+  } catch {
     throw new BffApiError(0, 'Network Error: Unable to reach the server.', 'Network Error');
   }
 
@@ -83,10 +85,12 @@ export async function bffRequest<T>(
       const body = JSON.parse(text);
       if (body._server_messages) {
         try {
-          const parsed = JSON.parse(body._server_messages);
-          serverMessage = Array.isArray(parsed) ? parsed.map((p: any) => p.message || p).join(', ') : body._server_messages;
+          const parsed = JSON.parse(String(body._server_messages));
+          serverMessage = Array.isArray(parsed)
+            ? parsed.map((p: Record<string, unknown>) => ((p.message as string) || String(p))).join(', ')
+            : String(body._server_messages);
         } catch {
-          serverMessage = body._server_messages;
+          serverMessage = String(body._server_messages);
         }
       } else if (body.message) {
         serverMessage = typeof body.message === 'string' ? body.message : JSON.stringify(body.message);

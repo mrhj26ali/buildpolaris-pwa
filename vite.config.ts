@@ -1,8 +1,8 @@
-﻿import { defineConfig } from 'vite'
+﻿/// <reference types="vitest" />
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -12,18 +12,18 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy all BFF API requests to the local Frappe/ERPNext server
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false,
-      },
-      // Proxy file uploads/downloads and assets
-      '/files': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false,
-      }
+      '/api': { target: 'http://localhost:8000', changeOrigin: true, secure: false },
+      '/files': { target: 'http://localhost:8000', changeOrigin: true, secure: false },
+    },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./tests/setup.ts'],
+    include: ['tests/{unit,integration,security,performance}/**/*.{test,spec}.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
     },
   },
 })

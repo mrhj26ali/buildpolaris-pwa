@@ -26,8 +26,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    refresh().finally(() => setIsLoading(false))
-  }, [])
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refresh().finally(() => setIsLoading(false));
+  }, []);
 
   async function login(email: string, password: string) {
     await loginRequest({ usr: email, pwd: password })

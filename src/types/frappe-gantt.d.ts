@@ -12,7 +12,7 @@ declare module 'frappe-gantt' {
   interface FrappeGanttOptions {
     view_mode?: string
     language?: string
-    custom_popup_html?: (task: any) => string
+    custom_popup_html?: (task: unknown) => string
   }
 
   export default class Gantt {
