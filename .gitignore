@@ -36,3 +36,4 @@ dev-dist
 
 # OS files
 Thumbs.db
+playwright-report/
