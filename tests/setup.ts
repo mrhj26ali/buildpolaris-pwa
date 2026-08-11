@@ -1,12 +1,12 @@
-import { afterAll, afterEach, beforeAll, vi } from 'vitest';
+﻿import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { setupServer } from 'msw/node';
 import { http, HttpResponse } from 'msw';
 import '@testing-library/jest-dom/vitest';
 
 // 1. Globally mock the CSRF token fetch to prevent MSW warnings
-vi.mock('@/lib/bffClient', async (importOriginal) => {
-  const mod = await importOriginal<typeof import('@/lib/bffClient')>();
+vi.mock('@/lib/clients/bffClient', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('@/lib/clients/bffClient')>();
   return {
     ...mod,
     getCsrfToken: vi.fn().mockResolvedValue('mock-csrf-token-12345'),
@@ -27,3 +27,4 @@ afterEach(() => {
   server.resetHandlers();
 });
 afterAll(() => server.close());
+

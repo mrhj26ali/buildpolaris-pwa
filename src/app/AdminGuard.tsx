@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom'
+﻿import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/features/auth/AuthContext'
 
 export function AdminGuard() {
@@ -6,3 +6,6 @@ export function AdminGuard() {
   if (user?.persona !== 'admin') return <Navigate to="/dashboard" replace />
   return <Outlet />
 }
+
+
+

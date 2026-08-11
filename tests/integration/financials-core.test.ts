@@ -1,4 +1,5 @@
-﻿import { describe, expect, test } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, expect, test } from 'vitest'
 import { http, HttpResponse } from 'msw'
 
 import { server } from '../setup'
@@ -105,3 +106,5 @@ describe('Financial Core API', () => {
     expect(summary.projected_total).toBe(1250)
   })
 })
+
+

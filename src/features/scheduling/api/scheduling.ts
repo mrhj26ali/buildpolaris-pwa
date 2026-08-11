@@ -1,4 +1,4 @@
-﻿import { bffRequest } from '@/lib/bffClient';
+﻿import { bffRequest } from '@/lib/clients/bffClient';
 
 export interface CpmTask {
   id: string;
@@ -30,3 +30,7 @@ export async function createBaseline(project: string, baselineName: string) {
     body: JSON.stringify({ project, baseline_name: baselineName }),
   });
 }
+
+
+
+

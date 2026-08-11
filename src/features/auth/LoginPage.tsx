@@ -1,7 +1,7 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
-import { BffApiError } from '@/lib/bffClient'
+import { BffApiError } from '@/lib/clients/bffClient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -58,7 +58,7 @@ export function LoginPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password}
+              <Input id="password" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" value={password}
                 onChange={(e) => setPassword(e.target.value)} required />
             </div>
             <Button type="submit" className="w-full bg-brand-500 hover:bg-brand-600" disabled={isLoading}>
@@ -74,3 +74,6 @@ export function LoginPage() {
     </div>
   )
 }
+
+
+

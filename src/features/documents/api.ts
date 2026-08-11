@@ -1,5 +1,5 @@
 ﻿// src/features/documents/api.ts
-import { bffRequest } from '@/lib/bffClient';
+import { bffRequest } from '@/lib/clients/bffClient';
 
 export interface DrawingNode {
   name: string;
@@ -99,3 +99,7 @@ export async function publishRevision(revisionId: string): Promise<void> {
     body: JSON.stringify({ revision_id: revisionId }),
   });
 }
+
+
+
+

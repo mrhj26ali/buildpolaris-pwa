@@ -1,5 +1,5 @@
 ﻿// src/features/financials/api.ts
-import { bffRequest } from '@/lib/bffClient';
+import { bffRequest } from '@/lib/clients/bffClient';
 
 export interface CostCodeNode {
   name: string;
@@ -95,3 +95,7 @@ export async function getFinancialDashboard(projectId: string): Promise<Financia
     body: JSON.stringify({ project: projectId }),
   });
 }
+
+
+
+

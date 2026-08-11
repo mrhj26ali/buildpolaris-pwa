@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { activateAccount } from './api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -69,3 +69,6 @@ export function ActivatePage() {
     </div>
   )
 }
+
+
+

@@ -1,4 +1,4 @@
-export interface PlatformUser {
+﻿export interface PlatformUser {
   name: string // ERPNext uses email as the User doctype's name/ID
   full_name: string
   email: string
@@ -11,3 +11,6 @@ export interface CreateUserPayload {
   first_name: string
   send_welcome_email: 0 | 1
 }
+
+
+

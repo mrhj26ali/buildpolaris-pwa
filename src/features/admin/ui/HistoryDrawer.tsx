@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { getHistory } from '../api'
 import type { VersionEntry } from '@/types/auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,17 +20,17 @@ export function HistoryDrawer({
             <CardTitle className="text-base">{title}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {entries === null && <p className="text-sm text-gray-500">Loading…</p>}
+            {entries === null && <p className="text-sm text-gray-500">Loadingâ€¦</p>}
             {entries?.length === 0 && <p className="text-sm text-gray-500">No recorded changes yet.</p>}
             {entries?.map((v, i) => (
               <div key={i} className="rounded-md border border-surface-border p-2 text-sm">
                 <div className="mb-1 text-xs text-gray-500">
-                  {v.owner} — {new Date(v.creation).toLocaleString()}
+                  {v.owner} â€” {new Date(v.creation).toLocaleString()}
                 </div>
                 {v.changes.map((c, j) => (
                   <div key={j} className="text-xs">
                     <span className="font-medium">{c.field}</span>: <span className="text-red-600 line-through">{String(c.before ?? '')}</span>{' '}
-                    → <span className="text-green-700">{String(c.after ?? '')}</span>
+                    â†’ <span className="text-green-700">{String(c.after ?? '')}</span>
                   </div>
                 ))}
               </div>
@@ -41,3 +41,6 @@ export function HistoryDrawer({
     </div>
   )
 }
+
+
+

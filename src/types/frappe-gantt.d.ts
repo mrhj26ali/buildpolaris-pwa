@@ -1,4 +1,4 @@
-declare module 'frappe-gantt' {
+﻿declare module 'frappe-gantt' {
   interface FrappeGanttTask {
     id: string
     name: string
@@ -26,3 +26,7 @@ declare module 'frappe-gantt' {
     $svg?: SVGSVGElement
   }
 }
+
+
+
+

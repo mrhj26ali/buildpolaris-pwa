@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { listUsers, resendInvite, setUserEnabled } from './api';
 import type { TenantUser } from '@/types/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,10 +81,13 @@ export function UsersPage() {
         <HistoryDrawer 
           doctype="User" 
           name={historyUser.email} 
-          title={`History — ${historyUser.full_name}`} 
+          title={`History â€” ${historyUser.full_name}`} 
           onClose={() => setHistoryUser(null)} 
         />
       )}
     </div>
   );
 }
+
+
+
