@@ -1,4 +1,5 @@
-﻿import { describe, expect, test } from 'vitest'
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, expect, test } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '../setup'
 import { runCpmEngine, createBaseline } from '@/features/scheduling/api/scheduling'
@@ -56,3 +57,5 @@ describe('Scheduling API', () => {
     expect(result.baseline).toBe('BASELINE-001')
   })
 })
+
+

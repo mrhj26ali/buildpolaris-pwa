@@ -1,4 +1,4 @@
-import { bffRequest } from '@/lib/bffClient';
+﻿import { bffRequest } from '@/lib/clients/bffClient';
 
 export interface TaskNode {
   name: string;
@@ -31,3 +31,6 @@ export async function getHealthCheck(projectId: string) {
     body: JSON.stringify({ project: projectId }),
   });
 }
+
+
+

@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom'
+﻿import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/features/auth/AuthContext'
 
 export function AuthGuard() {
@@ -7,3 +7,6 @@ export function AuthGuard() {
   if (!user) return <Navigate to="/login" replace />
   return <Outlet />
 }
+
+
+

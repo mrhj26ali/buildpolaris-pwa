@@ -1,4 +1,4 @@
-// src/features/scheduling/logic/cpmMath.ts
+﻿// src/features/scheduling/logic/cpmMath.ts
 export interface CpmTask {
   id: string;
   duration: number;
@@ -94,3 +94,6 @@ export function calculateCpm(tasks: CpmTask[], deps: CpmDep[]): { tasks: CpmTask
 
   return { tasks: Array.from(taskMap.values()) };
 }
+
+
+

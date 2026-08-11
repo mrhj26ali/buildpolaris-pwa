@@ -1,4 +1,4 @@
-import { bffRequest } from '@/lib/bffClient'
+﻿import { bffRequest } from '@/lib/clients/bffClient'
 import type { LoginPayload, PlatformRole, TenantUser, User, VersionEntry } from '@/types/auth'
 
 export interface RegisterTenantPayload {
@@ -114,3 +114,6 @@ export async function getHistory(doctype: string, name: string): Promise<Version
     { method: 'POST', body: JSON.stringify({ doctype, name }) },
   )
 }
+
+
+

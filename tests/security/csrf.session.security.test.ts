@@ -2,7 +2,7 @@
 import { http, HttpResponse } from 'msw'
 
 import { server } from '../setup'
-import { BffApiError, bffRequest } from '@/lib/bffClient'
+import { BffApiError, bffRequest } from '@/lib/clients/bffClient'
 
 describe('BFF client security boundary', () => {
   test('mutating requests include CSRF token and credentials', async () => {
@@ -72,3 +72,4 @@ describe('BFF client security boundary', () => {
     ).rejects.toBeInstanceOf(BffApiError)
   })
 })
+

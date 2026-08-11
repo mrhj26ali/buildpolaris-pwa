@@ -1,5 +1,5 @@
-// src/features/communications/api.ts
-import { bffRequest } from '@/lib/bffClient';
+﻿// src/features/communications/api.ts
+import { bffRequest } from '@/lib/clients/bffClient';
 
 export interface RFINode {
   name: string;
@@ -62,3 +62,6 @@ export async function createRfi(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+
+

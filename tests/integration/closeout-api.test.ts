@@ -1,11 +1,11 @@
 ﻿import { expect, test, describe, vi } from 'vitest';
 import { getCloseoutStatus, getWarrantyDocuments, type CloseoutStatus, type WarrantyNode } from '@/features/closeout/api';
 
-vi.mock('@/lib/bffClient', () => ({
+vi.mock('@/lib/clients/bffClient', () => ({
   bffRequest: vi.fn(),
 }));
 
-import { bffRequest } from '@/lib/bffClient';
+import { bffRequest } from '@/lib/clients/bffClient';
 
 describe('Project Closeout API Client', () => {
   test('getCloseoutStatus calls correct endpoint', async () => {

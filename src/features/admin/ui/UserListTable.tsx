@@ -1,4 +1,4 @@
-import type { TenantUser } from '@/types/auth';
+﻿import type { TenantUser } from '@/types/auth';
 import { Pencil, RefreshCw, ShieldCheck } from 'lucide-react';
 
 interface Props {
@@ -74,3 +74,6 @@ export function UserListTable({ users, onEdit, onResend, onToggleEnabled, onView
     </table>
   );
 }
+
+
+

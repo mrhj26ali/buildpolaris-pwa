@@ -48,3 +48,4 @@ describe('Auth API security boundary', () => {
     expect(capturedBody?.admin_email).toBe('admin@acme.test')
   })
 })
+

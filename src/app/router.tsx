@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+﻿/* eslint-disable react-refresh/only-export-components */
 
 import { createBrowserRouter, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/features/auth/AuthContext'
@@ -56,3 +56,6 @@ export const router = createBrowserRouter([
     ],
   },
 ])
+
+
+

@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from 'react-router-dom'
+﻿import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/features/auth/AuthContext'
 import {
   BarChart3, CheckSquare, ClipboardList, FileText, FolderKanban,
@@ -27,7 +27,7 @@ export function AppShell() {
       <aside className="flex w-64 flex-col border-r border-surface-border bg-white">
         <div className="p-4 text-lg font-semibold text-brand-900">BuildPolaris</div>
         <div className="px-4 pb-2 text-xs text-gray-500">
-          {user?.company ?? ''} · <span className="capitalize">{persona.replace('_', ' ')}</span>
+          {user?.company ?? ''} Â· <span className="capitalize">{persona.replace('_', ' ')}</span>
         </div>
         <nav className="flex-1 space-y-1 px-2">
           {items.map(({ to, label, icon: Icon }) => (
@@ -53,3 +53,6 @@ export function AppShell() {
     </div>
   )
 }
+
+
+

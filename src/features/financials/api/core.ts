@@ -1,4 +1,4 @@
-﻿import { bffRequest } from '@/lib/bffClient';
+﻿import { bffRequest } from '@/lib/clients/bffClient';
 
 export interface FinancialCostCode {
   name: string;
@@ -130,3 +130,7 @@ export async function createPayApplication(payload: {
     body: JSON.stringify(payload),
   });
 }
+
+
+
+

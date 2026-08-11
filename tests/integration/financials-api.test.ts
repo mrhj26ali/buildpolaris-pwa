@@ -1,8 +1,8 @@
 ﻿import { expect, test, describe, vi } from 'vitest';
 import { getBudgetSummary, getCommitmentList, type CostCodeNode, type CommitmentNode } from '@/features/financials/api';
 
-vi.mock('@/lib/bffClient', () => ({ bffRequest: vi.fn() }));
-import { bffRequest } from '@/lib/bffClient';
+vi.mock('@/lib/clients/bffClient', () => ({ bffRequest: vi.fn() }));
+import { bffRequest } from '@/lib/clients/bffClient';
 
 describe('Financial Control API Client', () => {
   test('getBudgetSummary calls correct endpoint', async () => {

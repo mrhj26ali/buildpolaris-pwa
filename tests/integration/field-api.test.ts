@@ -1,8 +1,8 @@
 ﻿import { expect, test, describe, vi } from 'vitest';
 import { getDailyLogList, getPunchList, type DailyLogNode, type PunchItemNode } from '@/features/field/api';
 
-vi.mock('@/lib/bffClient', () => ({ bffRequest: vi.fn() }));
-import { bffRequest } from '@/lib/bffClient';
+vi.mock('@/lib/clients/bffClient', () => ({ bffRequest: vi.fn() }));
+import { bffRequest } from '@/lib/clients/bffClient';
 
 describe('Field Execution API Client', () => {
   test('getDailyLogList calls correct endpoint', async () => {

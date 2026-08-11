@@ -1,5 +1,5 @@
 ﻿// src/features/closeout/api.ts
-import { bffRequest } from '@/lib/bffClient';
+import { bffRequest } from '@/lib/clients/bffClient';
 
 export interface CloseoutStatus {
   initiated: boolean;
@@ -126,3 +126,7 @@ export async function releaseFinalRetainage(projectId: string): Promise<{ status
     body: JSON.stringify({ project: projectId }),
   });
 }
+
+
+
+

@@ -1,4 +1,4 @@
-// src/features/communications/components/CommunicationsDashboard.tsx
+﻿// src/features/communications/components/CommunicationsDashboard.tsx
 import { useEffect, useState } from 'react';
 import { type RFINode, type SubmittalNode, type ActionItemNode, getRfiList, getSubmittalList, getActionItemList } from '../api';
 
@@ -67,7 +67,7 @@ export function CommunicationsDashboard({ projectId }: Props) {
                       {rfi.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rfi.requested_reply_date || '—'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rfi.requested_reply_date || 'â€”'}</td>
                 </tr>
               ))}
             </tbody>
@@ -92,7 +92,7 @@ export function CommunicationsDashboard({ projectId }: Props) {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{sub.spec_section}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.status}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rev {sub.revision_number}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.ball_in_court || '—'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.ball_in_court || 'â€”'}</td>
                 </tr>
               ))}
             </tbody>
@@ -116,8 +116,8 @@ export function CommunicationsDashboard({ projectId }: Props) {
               {actionItems.map((item) => (
                 <tr key={item.name}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.subject}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.assigned_to || '—'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.due_date || '—'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.assigned_to || 'â€”'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.due_date || 'â€”'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.priority}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.status}</td>
                 </tr>
@@ -129,3 +129,6 @@ export function CommunicationsDashboard({ projectId }: Props) {
     </div>
   );
 }
+
+
+

@@ -1,4 +1,4 @@
-import { expect, test, describe } from 'vitest';
+﻿import { expect, test, describe } from 'vitest';
 import { calculateCpm, type CpmTask, type CpmDep } from '@/features/scheduling/logic/cpmMath';
 
 describe('CPM Math Engine (Client-Side)', () => {

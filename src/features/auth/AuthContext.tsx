@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+﻿import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { getSessionContext, loginRequest, logoutRequest } from './api'
-import { clearCsrfToken } from '@/lib/bffClient'
+import { clearCsrfToken } from '@/lib/clients/bffClient'
 import type { User } from '@/types/auth'
 
 interface AuthContextValue {
@@ -56,3 +56,6 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')
   return ctx
 }
+
+
+

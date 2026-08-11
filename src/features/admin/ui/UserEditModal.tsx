@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { availableRoles, updateUserRoles } from '../api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,7 @@ export function UserEditModal({ user, onClose, onSuccess }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
       <Card className="flex max-h-[90vh] w-full max-w-lg flex-col">
-        <CardHeader className="shrink-0"><CardTitle className="text-base">Edit roles — {user.full_name}</CardTitle></CardHeader>
+        <CardHeader className="shrink-0"><CardTitle className="text-base">Edit roles â€” {user.full_name}</CardTitle></CardHeader>
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <CardContent className="min-h-0 flex-1 space-y-2 overflow-y-auto pb-2">
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -70,3 +70,6 @@ export function UserEditModal({ user, onClose, onSuccess }: Props) {
     </div>
   );
 }
+
+
+

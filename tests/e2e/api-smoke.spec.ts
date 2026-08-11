@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+﻿import { test, expect } from '@playwright/test';
 
 test('BFF health check endpoint is reachable (API-only E2E)', async ({ request }) => {
   // This test uses Playwright's APIRequestContext, NOT a browser.

@@ -1,8 +1,8 @@
 ﻿import { expect, test, describe, vi } from 'vitest';
 import { getDrawingRegister, getPublishedDrawings, type DrawingNode } from '@/features/documents/api';
 
-vi.mock('@/lib/bffClient', () => ({ bffRequest: vi.fn() }));
-import { bffRequest } from '@/lib/bffClient';
+vi.mock('@/lib/clients/bffClient', () => ({ bffRequest: vi.fn() }));
+import { bffRequest } from '@/lib/clients/bffClient';
 
 describe('Document Control API Client', () => {
   test('getDrawingRegister calls correct endpoint', async () => {
