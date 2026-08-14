@@ -1,24 +1,23 @@
-﻿import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { RouterProvider } from 'react-router-dom'
-import { AuthProvider } from './features/auth/AuthContext'
-import { AppProviders } from './app/providers'
-import { router } from './app/router'
-import { getDatabase } from './lib/db'
-import { syncEngine } from './lib/sync/SyncEngine'
-import './lib/i18n'
-import './index.css'
+﻿import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './app/router';
+import { AppProviders } from './app/providers';
+import { getDatabase } from './lib/db/database';
+import { syncEngine } from './lib/sync/SyncEngine';
+import './index.css';
 
-void getDatabase().then(() => {
-  void syncEngine.start()
-})
+async function bootstrap() {
+  await getDatabase();
+  await syncEngine.start();
+}
+
+bootstrap().catch(console.error);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthProvider>
-      <AppProviders>
-        <RouterProvider router={router} />
-      </AppProviders>
-    </AuthProvider>
-  </StrictMode>,
-)
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
+  </StrictMode>
+);
