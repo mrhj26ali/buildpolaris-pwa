@@ -1,4 +1,4 @@
-﻿// src/features/scheduling/components/VirtualizedGantt.tsx
+// src/features/scheduling/components/VirtualizedGantt.tsx
 import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 // Added 'type' keyword for TaskNode
@@ -12,6 +12,7 @@ interface Props {
 export function VirtualizedGantt({ tasks }: Props) {
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const rowVirtualizer = useVirtualizer({
     count: tasks.length,
     getScrollElement: () => parentRef.current,

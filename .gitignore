@@ -37,3 +37,7 @@ dev-dist
 # OS files
 Thumbs.db
 playwright-report/
+buildpolaris_pwa.txt
+notes/
+coverage/
+IMPLEMENTATION_CHANGES.txt
