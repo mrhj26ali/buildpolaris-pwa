@@ -1,140 +1,34 @@
-﻿const AI_GATEWAY_URL = (import.meta.env.VITE_AI_GATEWAY_URL ?? '').replace(/\/$/, '')
+// IMPORTANT — read before adding a fetch() call here.
+//
+// Per ARCH §4.2: "buildpolaris_ai is never exposed to the public internet
+// directly... this is what UC-8.1's own sequence diagram shows: PWA -> BFF -> AI,
+// never PWA -> AI." There is no browser-to-AI-sidecar network path anywhere in
+// this platform. This module is therefore NOT a second HTTP client — it exists
+// only to hold the typed request/response shapes for the copilot's streamed
+// payload, which features/copilot/lib/sse.ts imports for typing its parsed SSE
+// events. All actual network I/O for the copilot goes through bffClient.ts's
+// bffStream() against a buildpolaris_bff endpoint (/api/method/.../copilot/message),
+// which itself proxies buildpolaris_ai's SSE stream (ARCH §4.5).
+//
+// If you find yourself about to add `fetch(AI_GATEWAY_URL...)` here, stop — that
+// would violate NFR-SCALE.5's network-level enforcement ("if buildpolaris_ai is
+// unreachable, the PWA never even attempts to reach it"). Add a bffClient.ts
+// function instead.
 
-export class AiClientError extends Error {
-  readonly status: number | undefined
+import type { CopilotStreamEvent } from '@/types/copilot'
 
-  constructor(message: string, status?: number) {
-    super(message)
-    this.name = 'AiClientError'
-    this.status = status
-  }
+export interface CopilotMessageRequest {
+  thread_id: string | null
+  text: string
+  project?: string
 }
 
-export interface AiCitation {
-  source_id: string
-  span: string
-}
+export type { CopilotStreamEvent }
 
-export interface AnswerEvent {
-  type: 'answer'
-  text_delta: string
-  citations?: AiCitation[]
-}
-
-export interface ToolResultEvent {
-  type: 'tool_result'
-  tool_name: string
-  result: Record<string, unknown>
-}
-
-export interface PendingApprovalEvent {
-  type: 'pending_approval'
-  gate_id: string
-  agent_type: string
-  proposed_payload: Record<string, unknown>
-  confidence: number
-}
-
-export type AiStreamEvent = AnswerEvent | ToolResultEvent | PendingApprovalEvent
-
-function parseSseSegment(segment: string): AiStreamEvent | null {
-  let dataBuffer = ''
-  for (const line of segment.split(/\r?\n/)) {
-    if (line.startsWith('data:')) {
-      dataBuffer += line.slice(5).trim()
-    }
-  }
-  if (dataBuffer === '') return null
+export function parseCopilotStreamEvent(raw: string): CopilotStreamEvent | null {
   try {
-    return JSON.parse(dataBuffer) as AiStreamEvent
+    return JSON.parse(raw) as CopilotStreamEvent
   } catch {
     return null
   }
-}
-
-export async function aiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
-  let response: Response
-  try {
-    response = await fetch(`${AI_GATEWAY_URL}${path}`, {
-      ...options,
-      headers: {
-        Accept: 'application/json',
-        ...(options.headers ?? {}),
-      },
-    })
-  } catch {
-    throw new AiClientError('The AI gateway is unreachable.')
-  }
-  if (!response.ok) {
-    throw new AiClientError(`The AI request failed with status ${response.status}.`, response.status)
-  }
-  return (await response.json()) as T
-}
-
-export interface AiStreamOptions {
-  signal?: AbortSignal
-  authToken?: string
-  onEvent?: (event: AiStreamEvent) => void
-}
-
-export async function streamAiRequest(
-  path: string,
-  payload: unknown,
-  options: AiStreamOptions = {},
-): Promise<AiStreamEvent[]> {
-  let response: Response
-  try {
-    response = await fetch(`${AI_GATEWAY_URL}${path}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'text/event-stream',
-        ...(options.authToken ? { Authorization: `Bearer ${options.authToken}` } : {}),
-      },
-      body: JSON.stringify(payload),
-      signal: options.signal,
-    })
-  } catch {
-    throw new AiClientError('The AI gateway is unreachable.')
-  }
-  if (!response.ok) {
-    throw new AiClientError(`The AI stream failed with status ${response.status}.`, response.status)
-  }
-  if (!response.body) {
-    throw new AiClientError('The AI gateway did not return a readable stream.')
-  }
-
-  const reader = response.body.getReader()
-  const decoder = new TextDecoder()
-  const events: AiStreamEvent[] = []
-  let carry = ''
-
-  const drainSegment = (segment: string) => {
-    const event = parseSseSegment(segment)
-    if (event) {
-      events.push(event)
-      options.onEvent?.(event)
-    }
-  }
-
-  for (;;) {
-    const { value, done } = await reader.read()
-    if (done) break
-    const text = carry + decoder.decode(value, { stream: true })
-    const segments = text.split(/\r?\n\r?\n/)
-    carry = segments.pop() ?? ''
-    for (const segment of segments) {
-      drainSegment(segment)
-    }
-  }
-  if (carry.trim() !== '') {
-    drainSegment(carry)
-  }
-  return events
-}
-
-export async function getAiAgents() {
-  return aiRequest<{ agents: Array<{ id: string; name: string; description?: string }> }>('/agents', {
-    method: 'GET',
-  })
 }

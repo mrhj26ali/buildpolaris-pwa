@@ -1,31 +1,38 @@
-﻿export type ConflictResolutionAction = 'apply' | 'reject' | 'retry' | 'manual';
+// ERD §5.4's table, encoded as executable strategy, not a generic rule:
+//
+// | Collection    | Resolution                                             |
+// |---------------|---------------------------------------------------------|
+// | daily_logs    | Deterministic — not a conflict. Append-only.             |
+// | jsas          | Same — append-only, deterministic.                       |
+// | incidents     | Same — append-only, deterministic. Never merged/overwritten. |
+// | punch_items   | NOT deterministic — surfaced to the user explicitly.     |
+//
+// ARCH §3.2: "a generic rule here would silently violate FR-6.5's 'never
+// silently dropped' for exactly the one collection where a silent drop is most
+// consequential." This map is why that can't happen by accident — every
+// collection must have an explicit entry, and only punch_items's entry ever
+// returns `surface: true`.
 
-export interface ConflictResolution {
-  action: ConflictResolutionAction;
-  surfaceToUser: boolean;
-  reason?: string;
+import type { WritableFieldCollection, SyncApplyResult } from '@/types/sync'
+
+export interface ConflictDecision {
+  // 'apply-deterministic': BFF already resolved it server-side (append-only
+  //   collections can't actually conflict — this branch exists for completeness
+  //   and defensive logging, not because the BFF is expected to return it).
+  // 'surface': show both versions, block until the user resolves explicitly.
+  action: 'apply-deterministic' | 'surface'
 }
 
-export function resolveSyncConflict(
-  collection: string,
-  localDoc: any,
-  serverDoc: any
-): ConflictResolution {
-  // Per ERD §5.4: daily_logs, jsas, incidents are append-only.
-  if (['daily_logs', 'jsas', 'incidents'].includes(collection)) {
-    return { action: 'apply', surfaceToUser: false, reason: 'Append-only collection.' };
-  }
+const STRATEGY: Record<WritableFieldCollection, (result: SyncApplyResult) => ConflictDecision> = {
+  daily_logs: () => ({ action: 'apply-deterministic' }),
+  jsas: () => ({ action: 'apply-deterministic' }),
+  incidents: () => ({ action: 'apply-deterministic' }),
+  punch_items: () => ({ action: 'surface' }),
+}
 
-  // punch_items: manual conflict resolution
-  if (collection === 'punch_items') {
-    if (localDoc.status !== serverDoc.status || localDoc.assigned_to !== serverDoc.assigned_to) {
-      return {
-        action: 'manual',
-        surfaceToUser: true,
-        reason: 'Punch item modified locally and server-side simultaneously.',
-      };
-    }
-  }
-
-  return { action: 'apply', surfaceToUser: false };
+export function resolveConflict(
+  collection: WritableFieldCollection,
+  result: SyncApplyResult,
+): ConflictDecision {
+  return STRATEGY[collection](result)
 }

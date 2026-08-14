@@ -1,13 +1,7 @@
-﻿import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
-
-const isTest = Boolean(process.env.VITEST)
-
-const dbStorageAlias = isTest
-  ? path.resolve(__dirname, './tests/stubs/rxdb-storage.ts')
-  : path.resolve(__dirname, './src/lib/db/storage.ts')
 
 export default defineConfig({
   plugins: [
@@ -45,9 +39,11 @@ export default defineConfig({
       },
     }),
   ],
+  worker: {
+    format: 'es',
+  },
   resolve: {
     alias: {
-      '~db-storage': dbStorageAlias,
       '@': path.resolve(__dirname, './src'),
     },
   },

@@ -1,5 +1,0 @@
-﻿export { DocumentRegister } from './DocumentRegister';
-
-
-
-
