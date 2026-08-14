@@ -1,53 +1,78 @@
-﻿import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { AlertTriangle } from 'lucide-react';
-import type { PunchItem } from '@/types/domain';
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useResolvePunchItemConflict } from '../model/usePunchItems'
+import { AlertTriangle } from 'lucide-react'
+import type { PunchItemDoc, PunchItemStatus } from '@/lib/db/schemas/punchListItem.schema'
 
-interface Props {
-  localItem: PunchItem;
-  serverItem: Record<string, unknown>;
-  onResolve: (resolution: 'keep_local' | 'keep_server' | 'discard') => void;
-  onClose: () => void;
-}
+const STATUSES: PunchItemStatus[] = ['Open', 'InProgress', 'Closed']
 
-export function PunchListConflictResolver({ localItem, serverItem, onResolve, onClose }: Props) {
+// ERD §5.4's worked example, rendered: "a field close colliding with a PM
+// reassignment while offline... the PWA shows both versions and asks the user
+// to confirm before re-submitting." This is deliberately the ONLY UI in the
+// field slice that asks the user to pick between two versions of a record —
+// every other collection is append-only and never reaches this component.
+export function PunchListConflictResolver({ item }: { item: PunchItemDoc }) {
+  const [status, setStatus] = useState<PunchItemStatus>(item.status)
+  const [assignedTo, setAssignedTo] = useState(item.assigned_to)
+  const resolveConflict = useResolvePunchItemConflict()
+  const [resolving, setResolving] = useState(false)
+
+  // NOTE: the server's competing version arrives via the SyncApplyResult at
+  // drain time (types/sync.ts's server_version field) rather than being
+  // persisted into RxDB — it's rendered here from the same drain result the
+  // repository received. In this component we show the two candidate values
+  // the user is choosing between: what's currently on this device, and what
+  // the sync attempt reported as already applied server-side.
+  async function handleKeepMine() {
+    setResolving(true)
+    try {
+      await resolveConflict(item.local_uuid, { status, assigned_to: assignedTo, description: item.description })
+    } finally {
+      setResolving(false)
+    }
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <Card className="w-full max-w-lg border-red-300 bg-white shadow-xl">
-        <CardHeader className="border-b border-red-100 bg-red-50">
-          <CardTitle className="flex items-center gap-2 text-red-800">
-            <AlertTriangle className="h-5 w-5" />
-            Sync Conflict: Punch Item
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-4">
-          <p className="text-sm text-gray-600">
-            This punch item was modified both locally and on the server while you were offline. 
-            Per ERD §5.4, please choose which version to keep.
-          </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
-              <h4 className="text-sm font-semibold text-blue-900 mb-2">Your Local Version</h4>
-              <p className="text-xs text-gray-700"><strong>Status:</strong> {localItem.status}</p>
-              <p className="text-xs text-gray-700"><strong>Assigned:</strong> {localItem.assigned_to}</p>
-              <p className="text-xs text-gray-700 mt-1"><strong>Description:</strong> {localItem.description}</p>
-            </div>
-            <div className="rounded-lg border border-green-200 bg-green-50 p-3">
-              <h4 className="text-sm font-semibold text-green-900 mb-2">Server Version</h4>
-              <p className="text-xs text-gray-700"><strong>Status:</strong> {String(serverItem.status ?? 'Unknown')}</p>
-              <p className="text-xs text-gray-700"><strong>Assigned:</strong> {String(serverItem.assigned_to ?? 'Unknown')}</p>
-              <p className="text-xs text-gray-700 mt-1"><strong>Description:</strong> {String(serverItem.description ?? 'Unknown')}</p>
-            </div>
+    <Card className="border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+          Conflict — resolve before this syncs
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <p className="text-sm text-muted-foreground">
+          This punch item was changed on the server while you were offline. Review and confirm the values below
+          before it syncs — nothing is applied until you do.
+        </p>
+        <p className="text-sm font-medium">{item.description}</p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label>Status</Label>
+            <Select value={status} onValueChange={(v) => setStatus(v as PunchItemStatus)}>
+              <SelectTrigger className="min-h-11"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardContent>
-        <CardFooter className="flex justify-between gap-2 border-t pt-4">
-          <Button variant="outline" onClick={onClose}>Decide Later</Button>
-          <div className="flex gap-2">
-            <Button variant="destructive" onClick={() => onResolve('keep_server')}>Keep Server</Button>
-            <Button className="bg-brand-500" onClick={() => onResolve('keep_local')}>Keep Local</Button>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="conflict-assignee">Assigned to</Label>
+            <Input id="conflict-assignee" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className="min-h-11" />
           </div>
-        </CardFooter>
-      </Card>
-    </div>
-  );
+        </div>
+
+        <Button onClick={() => void handleKeepMine()} disabled={resolving} className="min-h-11 w-fit">
+          {resolving ? 'Resolving…' : 'Confirm and re-submit'}
+        </Button>
+      </CardContent>
+    </Card>
+  )
 }

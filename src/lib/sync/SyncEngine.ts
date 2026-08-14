@@ -1,103 +1,81 @@
-﻿import { bffRequest } from '@/lib/clients/bffClient';
-import { getDatabase } from '@/lib/db/database';
-import type { SyncMutationPayload, SyncResponse } from '@/types/sync';
-import { resolveSyncConflict } from './conflictResolver';
+// ARCH §3.2: "SyncEngine.ts drains the outbox on a reconnectListener.ts-detected
+// connectivity change (and periodically as a fallback)... The BFF is always the
+// arbiter, never the PWA. A queued offline write is re-validated against live
+// permission and business rules on sync — it is a delay, never a bypass."
+//
+// This class owns only orchestration (when to drain, session-expiry handling,
+// UI-visible summary refresh) — the actual per-collection replay logic lives in
+// outbox.ts, and conflict policy lives in conflictResolver.ts. Keeping this file
+// thin is what makes it possible to unit-test outbox.ts and conflictResolver.ts
+// without spinning up timers/listeners.
 
-export class SyncEngine {
-  private started = false;
-  private timer: number | null = null;
-  private syncInProgress = false;
+import { drainAllOutboxes, type OutboxDrainResult } from './outbox'
+import { startReconnectListener, isOnline, type ReconnectListenerHandle } from './reconnectListener'
+import { getSyncSummary, type SyncSummary } from './syncStatus'
+import { logger } from '@/lib/utils/logger'
 
-  async start() {
-    if (this.started) return;
-    this.started = true;
-    await this.syncNow();
-    if (typeof window !== 'undefined') {
-      this.timer = window.setInterval(() => {
-        this.syncNow().catch((error) => console.error('[SyncEngine] periodic sync failed', error));
-      }, 30000);
-      window.addEventListener('online', () => {
-        this.syncNow().catch((error) => console.error('[SyncEngine] online sync failed', error));
-      });
+type SyncListener = (summary: SyncSummary) => void
+
+class SyncEngine {
+  private started = false
+  private draining = false
+  private reconnectHandle: ReconnectListenerHandle | null = null
+  private listeners = new Set<SyncListener>()
+
+  async start(): Promise<void> {
+    if (this.started) return
+    this.started = true
+
+    this.reconnectHandle = startReconnectListener(() => {
+      void this.drainNow()
+    })
+
+    if (isOnline()) {
+      void this.drainNow()
     }
   }
 
-  async stop() {
-    this.started = false;
-    if (this.timer && typeof window !== 'undefined') {
-      window.clearInterval(this.timer);
-      this.timer = null;
-    }
+  stop(): void {
+    this.started = false
+    this.reconnectHandle?.stop()
+    this.reconnectHandle = null
   }
 
-  async queueMutation(mutation: SyncMutationPayload) {
-    if (typeof navigator !== 'undefined' && navigator.onLine) {
-      this.syncNow().catch(() => {});
-    }
+  subscribe(listener: SyncListener): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
   }
 
-  async syncNow(): Promise<SyncResponse | null> {
-    if (this.syncInProgress) return null;
-    this.syncInProgress = true;
+  private async notify(): Promise<void> {
+    const summary = await getSyncSummary()
+    this.listeners.forEach((l) => l(summary))
+  }
 
+  // ARCH §8.2 item 2: "the outbox survives a forced re-login, keyed
+  // independently of session lifetime." A 401 during drain does NOT clear the
+  // outbox — it simply stops this drain pass; the next reconnect/periodic
+  // trigger (after the user re-authenticates) picks the same pending docs back
+  // up, because sync_status is untouched on failure.
+  async drainNow(): Promise<OutboxDrainResult[]> {
+    if (this.draining) return []
+    if (!isOnline()) return []
+
+    this.draining = true
     try {
-      const db = await getDatabase();
-      const collections = ['daily_logs', 'jsas', 'incidents', 'punch_items'] as const;
-      
-      const response: SyncResponse = {
-        applied: [],
-        conflicts: [],
-        errors: [],
-        server_timestamp: Date.now(),
-      };
-
-      for (const collName of collections) {
-        const collection = db[collName];
-        if (!collection) continue;
-
-        const pendingDocs = await collection.find({ selector: { sync_status: 'pending' } }).exec();
-        if (pendingDocs.length === 0) continue;
-
-        const mutations = pendingDocs.map((doc) => ({
-          local_uuid: doc.local_uuid,
-          doctype: collName,
-          action: doc.server_id ? 'update' : 'create',
-          data: doc.toJSON(),
-          base_version: doc._rev,
-        }));
-
-        try {
-          const result = await bffRequest<SyncResponse>('/method/buildpolaris_bff.api.field.sync_field_mutations', {
-            method: 'POST',
-            body: JSON.stringify({ mutations, last_sync_timestamp: 0 }),
-          });
-
-          response.applied.push(...result.applied);
-          response.conflicts.push(...result.conflicts);
-          response.errors.push(...result.errors);
-
-          for (const doc of pendingDocs) {
-            const applied = result.applied.find((r) => r.local_uuid === doc.local_uuid);
-            const conflict = result.conflicts.find((r) => r.local_uuid === doc.local_uuid);
-            
-            if (applied) {
-              await doc.patch({ server_id: applied.server_id, sync_status: 'synced', synced_at: new Date().toISOString() });
-            } else if (conflict) {
-              const resolution = resolveSyncConflict(collName, doc.toJSON(), conflict.server_data);
-              if (resolution.action === 'manual') {
-                await doc.patch({ sync_status: 'conflict' });
-              }
-            }
-          }
-        } catch (error) {
-          console.error(`[SyncEngine] Failed to sync ${collName}`, error);
-        }
-      }
-      return response;
+      const results = await drainAllOutboxes()
+      const totalSynced = results.reduce((s, r) => s + r.synced, 0)
+      const totalConflicted = results.reduce((s, r) => s + r.conflicted, 0)
+      const totalFailed = results.reduce((s, r) => s + r.failed, 0)
+      logger.info('sync.drain_complete', { totalSynced, totalConflicted, totalFailed })
+      await this.notify()
+      return results
+    } catch (error) {
+      logger.error('sync.drain_failed', { error: error instanceof Error ? error.message : String(error) })
+      return []
     } finally {
-      this.syncInProgress = false;
+      this.draining = false
     }
   }
 }
 
-export const syncEngine = new SyncEngine();
+export const syncEngine = new SyncEngine()

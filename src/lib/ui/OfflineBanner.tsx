@@ -1,26 +1,30 @@
-﻿import { useEffect, useState } from 'react';
-import { CloudOff } from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { isOnline } from '@/lib/sync/reconnectListener'
+import { WifiOff } from 'lucide-react'
 
 export function OfflineBanner() {
-  const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [online, setOnline] = useState(isOnline())
 
   useEffect(() => {
-    const handleOnline = () => setOnline(true);
-    const handleOffline = () => setOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    const handleOnline = () => setOnline(true)
+    const handleOffline = () => setOnline(false)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
-  if (online) return null;
+  if (online) return null
 
   return (
-    <div className="bg-red-100 border-b border-red-200 px-4 py-2 text-sm text-red-800 flex items-center gap-2">
-      <CloudOff size={16} />
-      <span>You are offline. Changes will sync when connection is restored.</span>
+    <div
+      role="status"
+      className="flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-sm font-medium text-white"
+    >
+      <WifiOff className="h-4 w-4" aria-hidden="true" />
+      You're offline. Field entries will sync automatically once you reconnect.
     </div>
-  );
+  )
 }

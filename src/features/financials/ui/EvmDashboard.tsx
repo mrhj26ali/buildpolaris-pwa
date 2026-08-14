@@ -1,79 +1,70 @@
-﻿import { useEffect, useState } from 'react';
-import { getEvmSummary, type EvmSummary } from '@/features/financials/api/core';
+import { useEvmSnapshot } from '../model/useFinancials'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { LoadingState, ErrorState } from '@/lib/ui/States'
+import { formatCurrency, formatCompactCurrency } from '@/lib/utils/currency'
+import { formatDate } from '@/lib/utils/date'
+import { cn } from '@/lib/utils'
 
-export function EvmDashboard({ project }: { project: string }) {
-  const [evm, setEvm] = useState<EvmSummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!project) return;
-    let cancelled = false;
-    getEvmSummary(project)
-      .then((data) => {
-        if (!cancelled) {
-          setEvm(data);
-          setError(null);
-        }
-      })
-      .catch((e: unknown) => {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : 'Failed to load EVM');
-          setEvm(null);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [project]);
-
-  const loading = !evm && !error && !!project;
-  if (loading) return <div className="p-4 text-center text-gray-500">Loading EVM...</div>;
-  if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
-  if (!evm) return null;
-
-  return (
-    <div className="p-4 border rounded-lg bg-white shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Earned Value Management</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <MetricCard label="BAC" value={evm.bac} format="currency" />
-        <MetricCard label="PV" value={evm.pv} format="currency" />
-        <MetricCard label="EV" value={evm.ev} format="currency" />
-        <MetricCard label="AC" value={evm.ac} format="currency" />
-        <MetricCard label="CPI" value={evm.cpi} format="ratio" status={evm.cpi >= 0.95 ? 'good' : 'bad'} />
-        <MetricCard label="SPI" value={evm.spi} format="ratio" status={evm.spi >= 0.95 ? 'good' : 'bad'} />
-      </div>
-      <div className="mt-4">
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-          evm.status === 'on_track'
-            ? 'bg-green-100 text-green-800'
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {evm.status === 'on_track' ? 'On Track' : 'At Risk'}
-        </span>
-      </div>
-    </div>
-  );
+function performanceColor(index: number): string {
+  if (index >= 1) return 'text-status-ontrack'
+  if (index >= 0.9) return 'text-status-atrisk'
+  return 'text-status-overdue'
 }
 
-function MetricCard({
-  label,
-  value,
-  format,
-  status,
-}: {
-  label: string;
-  value: number;
-  format: 'currency' | 'ratio';
-  status?: 'good' | 'bad';
-}) {
-  const formatted = format === 'currency'
-    ? `$${value.toLocaleString()}`
-    : value.toFixed(3);
-  const color = status === 'good' ? 'text-green-600' : status === 'bad' ? 'text-red-600' : 'text-gray-900';
+export function EvmDashboard({ project }: { project: string }) {
+  const { data: evm, isLoading, isError, error, refetch } = useEvmSnapshot(project)
+
+  if (isLoading) return <LoadingState label="Loading EVM data…" />
+  if (isError) return <ErrorState message={error.message} onRetry={() => void refetch()} />
+  if (!evm) return null
+
   return (
-    <div className="p-3 bg-gray-50 rounded">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className={`text-lg font-bold ${color}`}>{formatted}</p>
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">Planned Value</CardTitle>
+          </CardHeader>
+          <CardContent><p className="text-xl font-semibold">{formatCompactCurrency(evm.planned_value)}</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">Earned Value</CardTitle>
+          </CardHeader>
+          <CardContent><p className="text-xl font-semibold">{formatCompactCurrency(evm.earned_value)}</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">Actual Cost</CardTitle>
+          </CardHeader>
+          <CardContent><p className="text-xl font-semibold">{formatCompactCurrency(evm.actual_cost)}</p></CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">As of</CardTitle>
+          </CardHeader>
+          <CardContent><p className="text-sm">{formatDate(evm.as_of)}</p></CardContent>
+        </Card>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Cost Performance Index</CardTitle></CardHeader>
+          <CardContent>
+            <p className={cn('text-3xl font-bold', performanceColor(evm.cpi))}>{evm.cpi.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">{evm.cpi >= 1 ? 'Under budget' : 'Over budget'}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Schedule Performance Index</CardTitle></CardHeader>
+          <CardContent>
+            <p className={cn('text-3xl font-bold', performanceColor(evm.spi))}>{evm.spi.toFixed(2)}</p>
+            <p className="text-xs text-muted-foreground">{evm.spi >= 1 ? 'Ahead of schedule' : 'Behind schedule'}</p>
+          </CardContent>
+        </Card>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Total actual cost to date: {formatCurrency(evm.actual_cost)}
+      </p>
     </div>
-  );
+  )
 }

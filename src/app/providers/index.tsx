@@ -1,18 +1,27 @@
-﻿import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode } from 'react';
-import { AuthProvider } from '@/features/auth/model/AuthContext';
-import { ProjectProvider } from '@/features/projects/model/ProjectContext';
-
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } },
-});
+import type { ReactNode } from 'react'
+import { QueryProvider } from './QueryProvider'
+import { AuthProvider } from './AuthProvider'
+import { SyncProvider } from './SyncProvider'
+import { ThemeProvider } from './ThemeProvider'
+import { ProjectProvider } from './ProjectContext'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { Toaster } from '@/components/ui/sonner'
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ProjectProvider>{children}</ProjectProvider>
-      </AuthProvider>
-    </QueryClientProvider>
-  );
+    <ThemeProvider>
+      <QueryProvider>
+        <AuthProvider>
+          <ProjectProvider>
+            <SyncProvider>
+              <TooltipProvider>
+                {children}
+                <Toaster />
+              </TooltipProvider>
+            </SyncProvider>
+          </ProjectProvider>
+        </AuthProvider>
+      </QueryProvider>
+    </ThemeProvider>
+  )
 }
