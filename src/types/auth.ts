@@ -1,10 +1,16 @@
-﻿export interface User {
+﻿export interface AssignedProject {
+  name: string
+  title: string
+}
+
+export interface User {
   email: string
   fullName: string
   roles: string[]
   persona: string
   company: string | null
   isAdmin: boolean
+  projects: AssignedProject[]
 }
 
 export interface PlatformRole {
@@ -32,6 +38,3 @@ export interface LoginPayload {
   usr: string
   pwd: string
 }
-
-
-

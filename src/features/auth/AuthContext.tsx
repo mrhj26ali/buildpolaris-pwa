@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+﻿import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import { getSessionContext, loginRequest, logoutRequest } from './api'
 import { clearCsrfToken } from '@/lib/clients/bffClient'
 import type { User } from '@/types/auth'
@@ -17,18 +17,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     try {
       setUser(await getSessionContext())
     } catch {
       setUser(null)
     }
-  }
+  }, [])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    refresh().finally(() => setIsLoading(false));
-  }, []);
+    refresh().finally(() => setIsLoading(false))
+  }, [refresh])
 
   async function login(email: string, password: string) {
     await loginRequest({ usr: email, pwd: password })
@@ -56,6 +56,3 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')
   return ctx
 }
-
-
-

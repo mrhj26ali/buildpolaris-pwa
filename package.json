@@ -1,5 +1,5 @@
-﻿{
-  "name": "construction-pm-pwa",
+{
+  "name": "buildpolaris-pwa",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -15,7 +15,10 @@
     "test:performance": "vitest run tests/performance --passWithNoTests",
     "test:e2e": "playwright test",
     "test:quality": "vitest run tests/unit tests/integration tests/security --passWithNoTests",
-    "test:all": "vitest run && playwright test"
+    "test:all": "vitest run && playwright test",
+    "typecheck": "tsc -b",
+    "scan:deps": "npm audit --audit-level=high",
+    "validate": "npm run lint && npm run typecheck && npm run test:quality && npm run build"
   },
   "dependencies": {
     "@dnd-kit/core": "^5.0.2",
@@ -27,14 +30,14 @@
     "@tanstack/react-virtual": "^3.14.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "frappe-gantt": "^1.0.0",
-    "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.8",
+    "dexie": "^4.4.4",
+    "i18next": "^26.3.6",
     "lucide-react": "^1.25.0",
     "radix-ui": "^1.6.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-hook-form": "^7.82.0",
+    "react-i18next": "^17.0.11",
     "react-router-dom": "^7.18.1",
     "rxdb": "^17.4.0",
     "rxjs": "^7.8.2",

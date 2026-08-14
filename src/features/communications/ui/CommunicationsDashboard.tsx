@@ -1,134 +1,52 @@
-﻿// src/features/communications/components/CommunicationsDashboard.tsx
-import { useEffect, useState } from 'react';
-import { type RFINode, type SubmittalNode, type ActionItemNode, getRfiList, getSubmittalList, getActionItemList } from '../api';
+﻿import { useEffect, useState } from 'react';
+import { getCommunicationsDashboard, type CommDashboard } from '@/features/communications/api';
 
-interface Props {
-  projectId: string;
-}
-
-export function CommunicationsDashboard({ projectId }: Props) {
-  const [rfis, setRfis] = useState<RFINode[]>([]);
-  const [submittals, setSubmittals] = useState<SubmittalNode[]>([]);
-  const [actionItems, setActionItems] = useState<ActionItemNode[]>([]);
-  const [activeTab, setActiveTab] = useState<'rfis' | 'submittals' | 'actions'>('rfis');
+export function CommunicationsDashboard({ project }: { project: string }) {
+  const [data, setData] = useState<CommDashboard | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!projectId) return;
-    getRfiList(projectId).then(setRfis).catch(console.error);
-    getSubmittalList(projectId).then(setSubmittals).catch(console.error);
-    getActionItemList(projectId).then(setActionItems).catch(console.error);
-  }, [projectId]);
+    if (!project) return;
+    let cancelled = false;
+    getCommunicationsDashboard(project)
+      .then((res) => { if (!cancelled) setData(res); })
+      .catch((e: unknown) => { if (!cancelled) setError(e instanceof Error ? e.message : 'Error'); });
+    return () => { cancelled = true; };
+  }, [project]);
 
-  const statusColor = (status: string) => {
-    switch (status) {
-      case 'Open': return 'bg-blue-100 text-blue-800';
-      case 'Answered': return 'bg-yellow-100 text-yellow-800';
-      case 'Closed': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  const loading = !data && !error && !!project;
+  if (loading) return <div className="p-4 text-center text-gray-500">Loading communications...</div>;
+  if (error) return <div className="p-4 text-center text-red-500">{error}</div>;
+  if (!data) return null;
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex space-x-2 border-b">
-        {(['rfis', 'submittals', 'actions'] as const).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 ${
-              activeTab === tab
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {tab === 'rfis' ? `RFIs (${rfis.length})` : tab === 'submittals' ? `Submittals (${submittals.length})` : `Action Items (${actionItems.length})`}
-          </button>
-        ))}
+    <div className="p-4 border rounded-lg bg-white shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Communications Dashboard</h3>
+        {data.total_overdue > 0 && (
+          <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+            {data.total_overdue} Overdue
+          </span>
+        )}
       </div>
-
-      {activeTab === 'rfis' && (
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">RFI #</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reply Due</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {rfis.map((rfi) => (
-                <tr key={rfi.name}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{rfi.rfi_number}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rfi.subject}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor(rfi.status)}`}>
-                      {rfi.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rfi.requested_reply_date || 'â€”'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeTab === 'submittals' && (
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Spec Section</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revision</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ball In Court</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {submittals.map((sub) => (
-                <tr key={sub.name}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{sub.spec_section}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.status}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rev {sub.revision_number}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{sub.ball_in_court || 'â€”'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {activeTab === 'actions' && (
-        <div className="overflow-x-auto border rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned To</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {actionItems.map((item) => (
-                <tr key={item.name}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.subject}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.assigned_to || 'â€”'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.due_date || 'â€”'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.priority}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard label="RFIs" value={data.rfi_count} overdue={data.rfi_overdue} />
+        <StatCard label="Submittals" value={data.submittal_count} />
+        <StatCard label="Transmittals" value={data.transmittal_count} />
+        <StatCard label="Action Items" value={data.action_item_count} overdue={data.action_item_overdue} />
+      </div>
     </div>
   );
 }
 
-
-
+function StatCard({ label, value, overdue }: { label: string; value: number; overdue?: number }) {
+  return (
+    <div className="p-3 bg-gray-50 rounded">
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-lg font-bold text-gray-900">{value}</p>
+      {overdue !== undefined && overdue > 0 && (
+        <p className="text-xs text-red-600 font-medium">{overdue} overdue</p>
+      )}
+    </div>
+  );
+}
