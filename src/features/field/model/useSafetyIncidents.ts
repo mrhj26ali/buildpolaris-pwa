@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getDatabase } from '@/lib/db/database'
 import { insertSafetyIncident, type SafetyIncidentInput } from '@/lib/db/repositories/safetyIncident.repository'
+import { toMutable } from '@/lib/db/toMutable'
 import type { SafetyIncidentDoc } from '@/lib/db/schemas/safetyIncident.schema'
 import { syncEngine } from '@/lib/sync/SyncEngine'
 
@@ -16,7 +17,7 @@ export function useSafetyIncidents(project: string | undefined) {
       subscription = db.incidents
         .find({ selector: { project }, sort: [{ incident_date: 'desc' }] })
         .$.subscribe((docs) => {
-          setIncidents(docs.map((d) => d.toJSON()))
+          setIncidents(docs.map((d) => toMutable(d.toJSON())))
           setLoading(false)
         })
     })

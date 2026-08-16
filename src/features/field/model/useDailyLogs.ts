@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getDatabase } from '@/lib/db/database'
 import { insertDailyLog, type DailyLogInput } from '@/lib/db/repositories/dailyLog.repository'
+import { toMutable } from '@/lib/db/toMutable'
 import type { DailyLogDoc } from '@/lib/db/schemas/dailyLog.schema'
 import { syncEngine } from '@/lib/sync/SyncEngine'
 
@@ -20,7 +21,7 @@ export function useDailyLogs(project: string | undefined) {
       subscription = db.daily_logs
         .find({ selector: { project }, sort: [{ log_date: 'desc' }] })
         .$.subscribe((docs) => {
-          setLogs(docs.map((d) => d.toJSON()))
+          setLogs(docs.map((d) => toMutable(d.toJSON())))
           setLoading(false)
         })
     })

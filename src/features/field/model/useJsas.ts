@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getDatabase } from '@/lib/db/database'
 import { insertJsa, type JsaInput } from '@/lib/db/repositories/jsa.repository'
+import { toMutable } from '@/lib/db/toMutable'
 import type { JsaDoc } from '@/lib/db/schemas/jsa.schema'
 import { syncEngine } from '@/lib/sync/SyncEngine'
 
@@ -16,7 +17,7 @@ export function useJsas(project: string | undefined) {
       subscription = db.jsas
         .find({ selector: { project }, sort: [{ jsa_date: 'desc' }] })
         .$.subscribe((docs) => {
-          setJsas(docs.map((d) => d.toJSON()))
+          setJsas(docs.map((d) => toMutable(d.toJSON())))
           setLoading(false)
         })
     })

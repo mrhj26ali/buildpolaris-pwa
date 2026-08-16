@@ -50,8 +50,19 @@ export function backwardPass(network: CpmNetwork, early: EarlyDates, projectDura
       computedFinish = early.early_finish.get(name) ?? node.duration
     }
 
-    late_finish.set(name, computedFinish)
-    late_start.set(name, computedFinish - node.duration)
+    // Clamp to the project horizon. Under an SF (or, less commonly, FF with a
+    // large negative lag) relationship, the raw candidate arithmetic can
+    // legitimately compute a late_finish beyond project_duration — there is
+    // no "after the project ends" for a task to float into, so any value
+    // above the horizon is capped here rather than surfaced as extra float.
+    // This mirrors the equivalent clamp in buildpolaris_bff's own CPM
+    // implementation (FR-2.3's "identical results" requirement) — see the
+    // golden fixture 'sf-type' in tests/fixtures/cpmGolden.ts for a worked
+    // example that specifically exercises this clamp.
+    const clampedFinish = Math.min(computedFinish, projectDuration)
+
+    late_finish.set(name, clampedFinish)
+    late_start.set(name, clampedFinish - node.duration)
   }
 
   return { late_start, late_finish }

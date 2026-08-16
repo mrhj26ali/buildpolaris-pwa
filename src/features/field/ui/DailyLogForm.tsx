@@ -34,6 +34,18 @@ export function DailyLogForm({ project }: { project: string }) {
     setLaborLines((prev) => prev.filter((_, i) => i !== index))
   }
 
+  function addEquipmentLine() {
+    setEquipmentLines((prev) => [...prev, { equipment: '', hours_used: 1 }])
+  }
+
+  function updateEquipmentLine(index: number, patch: Partial<DailyLogEquipmentLine>) {
+    setEquipmentLines((prev) => prev.map((line, i) => (i === index ? { ...line, ...patch } : line)))
+  }
+
+  function removeEquipmentLine(index: number) {
+    setEquipmentLines((prev) => prev.filter((_, i) => i !== index))
+  }
+
   async function handleAddPhoto() {
     const coords = await getCurrentCoordinates()
     setMedia((prev) => [
@@ -63,6 +75,7 @@ export function DailyLogForm({ project }: { project: string }) {
     setWeather('')
     setNotes('')
     setLaborLines([{ trade: '', headcount: 1, hours: 8 }])
+    setEquipmentLines([])
     setMedia([])
   }
 
@@ -124,6 +137,35 @@ export function DailyLogForm({ project }: { project: string }) {
             <Button variant="outline" size="sm" className="min-h-11 w-fit gap-1.5" onClick={addLaborLine}>
               <Plus className="h-3.5 w-3.5" aria-hidden="true" />
               Add trade
+            </Button>
+          </fieldset>
+
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-sm font-medium">Equipment</legend>
+            {equipmentLines.map((line, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <Input
+                  placeholder="Equipment"
+                  value={line.equipment}
+                  onChange={(e) => updateEquipmentLine(i, { equipment: e.target.value })}
+                  className="min-h-11 flex-1"
+                />
+                <Input
+                  type="number"
+                  min={0}
+                  value={line.hours_used}
+                  onChange={(e) => updateEquipmentLine(i, { hours_used: Number(e.target.value) })}
+                  className="min-h-11 w-24"
+                  aria-label="Hours used"
+                />
+                <Button variant="ghost" size="icon" className="min-h-11 min-w-11" onClick={() => removeEquipmentLine(i)}>
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" className="min-h-11 w-fit gap-1.5" onClick={addEquipmentLine}>
+              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+              Add equipment
             </Button>
           </fieldset>
 

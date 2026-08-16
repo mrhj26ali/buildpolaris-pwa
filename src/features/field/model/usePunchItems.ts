@@ -6,6 +6,7 @@ import {
   resolvePunchItemConflict,
   type PunchItemInput,
 } from '@/lib/db/repositories/punchListItem.repository'
+import { toMutable } from '@/lib/db/toMutable'
 import type { PunchItemDoc, PunchItemStatus } from '@/lib/db/schemas/punchListItem.schema'
 import { syncEngine } from '@/lib/sync/SyncEngine'
 
@@ -19,7 +20,7 @@ export function usePunchItems(project: string | undefined) {
 
     void getDatabase().then((db) => {
       subscription = db.punch_items.find({ selector: { project } }).$.subscribe((docs) => {
-        setItems(docs.map((d) => d.toJSON()))
+        setItems(docs.map((d) => toMutable(d.toJSON())))
         setLoading(false)
       })
     })

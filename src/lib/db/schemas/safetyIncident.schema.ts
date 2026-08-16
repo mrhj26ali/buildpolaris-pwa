@@ -23,6 +23,15 @@ export const safetyIncidentSchema: RxJsonSchema<SafetyIncidentDoc> = {
   version: 0,
   primaryKey: 'local_uuid',
   type: 'object',
+  // NFR-PRIV.1/.2: narrative text and involved-person names are the fields
+  // most likely to contain sensitive personal data in this collection.
+  // Encrypted fields cannot be used in query selectors or indexes (RxDB
+  // constraint) — hence 'narrative' and 'involved_persons' are excluded from
+  // `indexes` below; queries filter by project/severity/date only, never by
+  // narrative content. Encryption is applied by the wrapped storage
+  // configured in lib/db/database.ts (encryption-crypto-js) — this array
+  // just tells RxDB which fields that wrapper should encrypt at rest.
+  encrypted: ['narrative', 'involved_persons'],
   properties: {
     local_uuid: { type: 'string', maxLength: 64 },
     server_id: { type: ['string', 'null'] },

@@ -1,6 +1,7 @@
 import { getDatabase } from '../database'
 import type { JsaDoc } from '../schemas/jsa.schema'
 import { nowIso } from '@/lib/utils/date'
+import { toMutable } from '../toMutable'
 
 export type JsaInput = Omit<
   JsaDoc,
@@ -19,19 +20,19 @@ export async function insertJsa(input: JsaInput): Promise<JsaDoc> {
     _rev: '',
   }
   const inserted = await db.jsas.insert(doc)
-  return inserted.toJSON()
+  return toMutable(inserted.toJSON())
 }
 
 export async function listJsas(project: string): Promise<JsaDoc[]> {
   const db = await getDatabase()
   const docs = await db.jsas.find({ selector: { project }, sort: [{ jsa_date: 'desc' }] }).exec()
-  return docs.map((d) => d.toJSON())
+  return docs.map((d) => toMutable(d.toJSON()))
 }
 
 export async function findPendingJsas(): Promise<JsaDoc[]> {
   const db = await getDatabase()
   const docs = await db.jsas.find({ selector: { sync_status: 'pending' } }).exec()
-  return docs.map((d) => d.toJSON())
+  return docs.map((d) => toMutable(d.toJSON()))
 }
 
 export async function markJsaSynced(localUuid: string, serverId: string): Promise<void> {

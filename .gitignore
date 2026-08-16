@@ -41,3 +41,5 @@ buildpolaris_pwa.txt
 notes/
 coverage/
 IMPLEMENTATION_CHANGES.txt
+tests/
+a.ps1

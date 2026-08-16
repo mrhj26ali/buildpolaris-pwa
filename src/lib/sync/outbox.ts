@@ -66,7 +66,7 @@ async function drainDailyLogs(): Promise<OutboxDrainResult> {
       'daily_logs',
       doc.local_uuid,
       '/method/buildpolaris_bff.field.api.sync_daily_log',
-      { local_uuid: doc.local_uuid, ...doc },
+      { ...doc },
     )
     if (result.outcome === 'applied' && result.server_id) {
       await markDailyLogSynced(doc.local_uuid, result.server_id)
@@ -92,7 +92,7 @@ async function drainJsas(): Promise<OutboxDrainResult> {
       'jsas',
       doc.local_uuid,
       '/method/buildpolaris_bff.field.api.sync_jsa',
-      { local_uuid: doc.local_uuid, ...doc },
+      { ...doc },
     )
     if (result.outcome === 'applied' && result.server_id) {
       await markJsaSynced(doc.local_uuid, result.server_id)
@@ -118,7 +118,7 @@ async function drainIncidents(): Promise<OutboxDrainResult> {
       'incidents',
       doc.local_uuid,
       '/method/buildpolaris_bff.field.api.sync_safety_incident',
-      { local_uuid: doc.local_uuid, ...doc },
+      { ...doc },
     )
     if (result.outcome === 'applied' && result.server_id) {
       await markSafetyIncidentSynced(doc.local_uuid, result.server_id)
@@ -144,7 +144,7 @@ async function drainPunchItems(): Promise<OutboxDrainResult> {
       'punch_items',
       doc.local_uuid,
       '/method/buildpolaris_bff.field.api.sync_punch_item',
-      { local_uuid: doc.local_uuid, ...doc },
+      { ...doc },
     )
     if (result.outcome === 'applied' && result.server_id) {
       await markPunchItemSynced(doc.local_uuid, result.server_id)

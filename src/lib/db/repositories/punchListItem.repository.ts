@@ -1,6 +1,7 @@
 import { getDatabase } from '../database'
 import type { PunchItemDoc, PunchItemStatus } from '../schemas/punchListItem.schema'
 import { nowIso } from '@/lib/utils/date'
+import { toMutable } from '../toMutable'
 
 export type PunchItemInput = Omit<
   PunchItemDoc,
@@ -19,25 +20,25 @@ export async function insertPunchItem(input: PunchItemInput): Promise<PunchItemD
     _rev: '',
   }
   const inserted = await db.punch_items.insert(doc)
-  return inserted.toJSON()
+  return toMutable(inserted.toJSON())
 }
 
 export async function listPunchItems(project: string): Promise<PunchItemDoc[]> {
   const db = await getDatabase()
   const docs = await db.punch_items.find({ selector: { project } }).exec()
-  return docs.map((d) => d.toJSON())
+  return docs.map((d) => toMutable(d.toJSON()))
 }
 
 export async function findPendingPunchItems(): Promise<PunchItemDoc[]> {
   const db = await getDatabase()
   const docs = await db.punch_items.find({ selector: { sync_status: 'pending' } }).exec()
-  return docs.map((d) => d.toJSON())
+  return docs.map((d) => toMutable(d.toJSON()))
 }
 
 export async function findConflictedPunchItems(): Promise<PunchItemDoc[]> {
   const db = await getDatabase()
   const docs = await db.punch_items.find({ selector: { sync_status: 'conflict' } }).exec()
-  return docs.map((d) => d.toJSON())
+  return docs.map((d) => toMutable(d.toJSON()))
 }
 
 export async function updatePunchItemStatus(localUuid: string, status: PunchItemStatus): Promise<void> {

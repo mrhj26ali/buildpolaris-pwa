@@ -1,5 +1,5 @@
 import { getDatabase } from '@/lib/db/database'
-import { fetchCurrentRevisionsForOfflineCache } from './documentControlApi'
+import { fetchCurrentRevisionsForOfflineCache } from '../model/documentControlApi'
 import { nowIso } from '@/lib/utils/date'
 
 // ERD §5.1: "never the file blob itself — large binaries stay fetched on
@@ -11,7 +11,7 @@ export async function refreshDrawingRevisionsCache(project: string): Promise<voi
   const cachedAt = nowIso()
 
   await db.drawing_revisions_meta.bulkUpsert(
-    revisions.map((r) => ({
+    revisions.map((r: (typeof revisions)[number]) => ({
       name: r.name,
       drawing: r.drawing,
       drawing_number: r.drawing_number,
