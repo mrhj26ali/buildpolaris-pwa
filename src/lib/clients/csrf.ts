@@ -6,9 +6,11 @@
 const BFF_BASE_URL = '/api'
 
 let csrfToken: string | undefined
+let csrfTokenPromise: Promise<string> | undefined
 
 export function clearCsrfToken(): void {
   csrfToken = undefined
+  csrfTokenPromise = undefined
 }
 
 async function fetchCsrfToken(): Promise<string> {
@@ -36,5 +38,23 @@ async function fetchCsrfToken(): Promise<string> {
 }
 
 export async function getCsrfToken(): Promise<string> {
-  return csrfToken ?? fetchCsrfToken()
+  // Return cached token if available
+  if (csrfToken) {
+    return csrfToken
+  }
+
+  // Return in-flight promise if a fetch is already happening
+  if (csrfTokenPromise) {
+    return csrfTokenPromise
+  }
+
+  // Start new fetch and cache the promise
+  csrfTokenPromise = fetchCsrfToken()
+    .catch((error) => {
+      // Clear the promise on failure so we can retry
+      csrfTokenPromise = undefined
+      throw error
+    })
+
+  return csrfTokenPromise
 }

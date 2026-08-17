@@ -102,3 +102,22 @@ export async function getEvmSnapshot(project: string): Promise<EvmSnapshot> {
     { method: 'GET' },
   )
 }
+
+// --- Pay Application Creation ---
+export interface CreatePayApplicationPayload {
+  commitment: string
+  period_end: string
+  lines: Array<{
+    cost_code: string
+    work_completed: number
+    materials_stored: number
+  }>
+  retainage_pct?: number
+}
+
+export async function createPayApplication(payload: CreatePayApplicationPayload): Promise<PayApplication> {
+  return bffRequest<PayApplication>('/method/buildpolaris_bff.financials.api.create_pay_application', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}

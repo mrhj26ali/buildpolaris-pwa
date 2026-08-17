@@ -20,7 +20,7 @@ export async function insertSafetyIncident(input: SafetyIncidentInput): Promise<
     _rev: '',
   }
   const inserted = await db.incidents.insert(doc)
-  return toMutable(inserted.toJSON())
+  return toMutable<SafetyIncidentDoc>(inserted.toJSON())
 }
 
 export async function listSafetyIncidents(project: string): Promise<SafetyIncidentDoc[]> {
@@ -28,13 +28,13 @@ export async function listSafetyIncidents(project: string): Promise<SafetyIncide
   const docs = await db.incidents
     .find({ selector: { project }, sort: [{ incident_date: 'desc' }] })
     .exec()
-  return docs.map((d) => toMutable(d.toJSON()))
+  return docs.map((d) => toMutable<SafetyIncidentDoc>(d.toJSON()))
 }
 
 export async function findPendingSafetyIncidents(): Promise<SafetyIncidentDoc[]> {
   const db = await getDatabase()
   const docs = await db.incidents.find({ selector: { sync_status: 'pending' } }).exec()
-  return docs.map((d) => toMutable(d.toJSON()))
+  return docs.map((d) => toMutable<SafetyIncidentDoc>(d.toJSON()))
 }
 
 export async function markSafetyIncidentSynced(localUuid: string, serverId: string): Promise<void> {

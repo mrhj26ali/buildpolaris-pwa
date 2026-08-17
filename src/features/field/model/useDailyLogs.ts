@@ -21,7 +21,7 @@ export function useDailyLogs(project: string | undefined) {
       subscription = db.daily_logs
         .find({ selector: { project }, sort: [{ log_date: 'desc' }] })
         .$.subscribe((docs) => {
-          setLogs(docs.map((d) => toMutable(d.toJSON())))
+          setLogs(docs.map((d) => toMutable<DailyLogDoc>(d.toJSON())))
           setLoading(false)
         })
     })

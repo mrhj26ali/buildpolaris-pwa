@@ -1,5 +1,5 @@
 import { bffRequest } from '@/lib/clients/bffClient'
-import type { Rfi, SubmittalPackage, Transmittal, MeetingSeries, MeetingMinutes, ActionItem } from '@/types/domain'
+import type { Rfi, SubmittalPackage, Transmittal, MeetingSeries, MeetingMinutes, ActionItem, SubmittalLineStatus } from '@/types/domain'
 
 export async function listRfis(project: string): Promise<Rfi[]> {
   return bffRequest<Rfi[]>(`/method/buildpolaris_bff.communications.api.list_rfis?project=${encodeURIComponent(project)}`, {
@@ -23,9 +23,9 @@ export async function createRfi(payload: CreateRfiPayload): Promise<Rfi> {
 }
 
 export async function respondToRfi(name: string, response: string): Promise<Rfi> {
-  return bffRequest<Rfi>('/method/buildpolaris_bff.communications.api.respond_to_rfi', {
+  return bffRequest<Rfi>('/method/buildpolaris_bff.communications.api.answer_rfi', {
     method: 'POST',
-    body: JSON.stringify({ name, response }),
+    body: JSON.stringify({ rfi: name, response }), // Note: BFF expects 'rfi', not 'name'
   })
 }
 
@@ -59,7 +59,7 @@ export async function createSubmittal(payload: CreateSubmittalPayload): Promise<
 export async function reviewSubmittalLine(
   submittal: string,
   lineName: string,
-  status: string,
+  status: SubmittalLineStatus,
 ): Promise<SubmittalPackage> {
   return bffRequest<SubmittalPackage>('/method/buildpolaris_bff.communications.api.review_submittal_line', {
     method: 'POST',
@@ -96,8 +96,27 @@ export async function listActionItems(project: string): Promise<ActionItem[]> {
 }
 
 export async function completeActionItem(name: string): Promise<ActionItem> {
-  return bffRequest<ActionItem>('/method/buildpolaris_bff.communications.api.complete_action_item', {
+  return bffRequest<ActionItem>('/method/buildpolaris_bff.communications.api.close_action_item', {
     method: 'POST',
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ action_item: name }), // Note: BFF expects 'action_item'
+  })
+}
+
+// --- Meetings ---
+export interface RecordMinutesPayload {
+  series: string
+  occurred_at: string
+  notes: string
+  action_items?: Array<{
+    subject: string
+    assigned_to: string
+    due_date: string
+  }>
+}
+
+export async function recordMinutes(payload: RecordMinutesPayload): Promise<MeetingMinutes> {
+  return bffRequest<MeetingMinutes>('/method/buildpolaris_bff.communications.api.record_minutes', {
+    method: 'POST',
+    body: JSON.stringify(payload),
   })
 }

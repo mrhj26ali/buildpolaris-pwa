@@ -60,14 +60,14 @@ export async function createDependency(payload: CreateDependencyPayload): Promis
 // the worker-based client mirror (lib/cpm/) is only for instant what-if
 // feedback before this call resolves (FR-2.3).
 export async function recomputeSchedule(project: string): Promise<TaskRecord[]> {
-  return bffRequest<TaskRecord[]>('/method/buildpolaris_bff.scheduling.api.recompute_cpm', {
+  return bffRequest<TaskRecord[]>('/method/buildpolaris_bff.scheduling.api.recompute_schedule', {
     method: 'POST',
     body: JSON.stringify({ project }),
   })
 }
 
 export async function captureBaseline(project: string, label: string): Promise<ScheduleBaseline> {
-  return bffRequest<ScheduleBaseline>('/method/buildpolaris_bff.scheduling.api.capture_baseline', {
+  return bffRequest<ScheduleBaseline>('/method/buildpolaris_bff.scheduling.api.create_baseline', {
     method: 'POST',
     body: JSON.stringify({ project, label }),
   })

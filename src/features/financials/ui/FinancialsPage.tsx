@@ -1,7 +1,7 @@
 import { useProjectContext } from '@/app/providers/ProjectContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BudgetTable } from './BudgetTable'
-import { CommitmentsTable } from './CommitmentsTable'
+import { CommitmentsPanel } from './CommitmentsPanel'
 import { ChangeEventsTable } from './ChangeEventsTable'
 import { PayApplicationsTable } from './PayApplicationsTable'
 import { EvmDashboard } from './EvmDashboard'
@@ -40,7 +40,7 @@ export default function FinancialsPage() {
           <BudgetTable project={activeProject.name} />
         </TabsContent>
         <TabsContent value="commitments" className="mt-4">
-          <CommitmentsTable project={activeProject.name} />
+          <CommitmentsPanel project={activeProject.name} />
         </TabsContent>
         <TabsContent value="change-events" className="mt-4">
           <ChangeEventsTable project={activeProject.name} />

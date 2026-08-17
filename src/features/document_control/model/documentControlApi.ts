@@ -29,7 +29,7 @@ export async function uploadRevision(payload: UploadRevisionPayload): Promise<Dr
   formData.append('issued_for', payload.issued_for)
   formData.append('file', payload.file)
 
-  return bffRequest<DrawingRevision>('/method/buildpolaris_bff.document_control.api.upload_revision', {
+  return bffRequest<DrawingRevision>('/method/buildpolaris_bff.document_control.api.add_revision', {
     method: 'POST',
     body: formData,
   })
@@ -43,7 +43,7 @@ export async function listAnnotations(revision: string): Promise<DrawingAnnotati
 }
 
 export async function createAnnotation(revision: string, text: string): Promise<DrawingAnnotation> {
-  return bffRequest<DrawingAnnotation>('/method/buildpolaris_bff.document_control.api.create_annotation', {
+  return bffRequest<DrawingAnnotation>('/method/buildpolaris_bff.document_control.api.add_annotation', {
     method: 'POST',
     body: JSON.stringify({ revision, text }),
   })

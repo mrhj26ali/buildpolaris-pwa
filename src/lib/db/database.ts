@@ -2,6 +2,7 @@ import { createRxDatabase, type RxCollection, type RxDatabase, addRxPlugin } fro
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode'
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie'
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js'
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv' // ADDED: AJV validator import
 import { dailyLogSchema, type DailyLogDoc } from './schemas/dailyLog.schema'
 import { jsaSchema, type JsaDoc } from './schemas/jsa.schema'
 import { safetyIncidentSchema, type SafetyIncidentDoc } from './schemas/safetyIncident.schema'
@@ -51,8 +52,11 @@ let databasePromise: Promise<BuildPolarisDatabase> | null = null
 // cosmetic one.
 const password = import.meta.env.VITE_RXDB_ENCRYPTION_PASSWORD ?? 'CHANGE_ME_DEV_ONLY_NOT_FOR_PRODUCTION'
 
+// Chain the wrappers: Dexie -> AJV Validation (required for dev-mode) -> Encryption
+const baseStorage = getRxStorageDexie()
+const validatedStorage = wrappedValidateAjvStorage({ storage: baseStorage })
 const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
-  storage: getRxStorageDexie(),
+  storage: validatedStorage, // <-- Wrap the validated storage, not the base one
 })
 
 export function getDatabase(): Promise<BuildPolarisDatabase> {

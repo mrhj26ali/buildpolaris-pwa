@@ -20,7 +20,7 @@ export async function insertDailyLog(input: DailyLogInput): Promise<DailyLogDoc>
     _rev: '',
   }
   const inserted = await db.daily_logs.insert(doc)
-  return toMutable(inserted.toJSON())
+  return toMutable<DailyLogDoc>(inserted.toJSON())
 }
 
 export async function listDailyLogs(project: string): Promise<DailyLogDoc[]> {
@@ -28,13 +28,13 @@ export async function listDailyLogs(project: string): Promise<DailyLogDoc[]> {
   const docs = await db.daily_logs
     .find({ selector: { project }, sort: [{ log_date: 'desc' }] })
     .exec()
-  return docs.map((d) => toMutable(d.toJSON()))
+  return docs.map((d) => toMutable<DailyLogDoc>(d.toJSON()))
 }
 
 export async function findPendingDailyLogs(): Promise<DailyLogDoc[]> {
   const db = await getDatabase()
   const docs = await db.daily_logs.find({ selector: { sync_status: 'pending' } }).exec()
-  return docs.map((d) => toMutable(d.toJSON()))
+  return docs.map((d) => toMutable<DailyLogDoc>(d.toJSON()))
 }
 
 export async function markDailyLogSynced(localUuid: string, serverId: string): Promise<void> {

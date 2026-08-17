@@ -9,7 +9,7 @@ export const syncEnvelopeProperties = {
   sync_status: { type: 'string', enum: ['pending', 'synced', 'conflict'] } as const,
   queued_at: { type: 'string', format: 'date-time' } as const,
   synced_at: { type: ['string', 'null'], format: 'date-time' } as const,
-  _rev: { type: 'string' } as const,
+  // _rev removed as requested
 }
 
 export const syncEnvelopeRequired = ['local_uuid', 'sync_status', 'queued_at'] as const

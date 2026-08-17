@@ -56,9 +56,14 @@ export interface RequestLienWaiverPayload {
 }
 
 export async function requestLienWaiver(payload: RequestLienWaiverPayload): Promise<LienWaiver> {
-  return bffRequest<LienWaiver>('/method/buildpolaris_bff.closeout.api.request_lien_waiver', {
+  return bffRequest<LienWaiver>('/method/buildpolaris_bff.closeout.api.add_lien_waiver', {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      closing_record: payload.closing_record,
+      supplier: payload.supplier,
+      type: payload.type,
+      pay_application: payload.pay_application,
+    }),
   })
 }
 
@@ -81,7 +86,7 @@ export async function uploadCloseoutDocument(payload: UploadCloseoutDocPayload):
   formData.append('category', payload.category)
   formData.append('file', payload.file)
 
-  return bffRequest<CloseoutDocument>('/method/buildpolaris_bff.closeout.api.upload_closeout_document', {
+  return bffRequest<CloseoutDocument>('/method/buildpolaris_bff.closeout.api.add_closeout_document', {
     method: 'POST',
     body: formData,
   })
@@ -98,14 +103,21 @@ export interface CloseoutReadiness {
 }
 
 export async function getCloseoutReadiness(closingRecord: string): Promise<CloseoutReadiness> {
-  return bffRequest<CloseoutReadiness>(
-    `/method/buildpolaris_bff.closeout.api.get_readiness?closing_record=${encodeURIComponent(closingRecord)}`,
+  // Note: We map the BFF's {can_finalize, blockers} response to the PWA's expected shape
+  const response = await bffRequest<{ can_finalize: boolean; blockers: string[] }>(
+    `/method/buildpolaris_bff.closeout.api.check_finalize_gate?closing_record=${encodeURIComponent(closingRecord)}`,
     { method: 'GET' },
   )
+  return {
+    all_punch_items_closed: !response.blockers.some(b => b.includes("Punch List")),
+    final_payment_issued: !response.blockers.some(b => b.includes("financial")),
+    substantial_completion_signed: !response.blockers.some(b => b.includes("Substantial Completion")),
+    ready_to_finalize: response.can_finalize,
+  }
 }
 
 export async function finalizeCloseout(closingRecord: string): Promise<ClosingRecord> {
-  return bffRequest<ClosingRecord>('/method/buildpolaris_bff.closeout.api.finalize', {
+  return bffRequest<ClosingRecord>('/method/buildpolaris_bff.closeout.api.finalize_closing_record', {
     method: 'POST',
     body: JSON.stringify({ closing_record: closingRecord }),
   })

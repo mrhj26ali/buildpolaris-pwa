@@ -1,11 +1,13 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/apple-icon-180.png'],

@@ -17,7 +17,7 @@ export function useSafetyIncidents(project: string | undefined) {
       subscription = db.incidents
         .find({ selector: { project }, sort: [{ incident_date: 'desc' }] })
         .$.subscribe((docs) => {
-          setIncidents(docs.map((d) => toMutable(d.toJSON())))
+          setIncidents(docs.map((d) => toMutable<SafetyIncidentDoc>(d.toJSON())))
           setLoading(false)
         })
     })

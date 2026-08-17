@@ -17,7 +17,7 @@ export function useJsas(project: string | undefined) {
       subscription = db.jsas
         .find({ selector: { project }, sort: [{ jsa_date: 'desc' }] })
         .$.subscribe((docs) => {
-          setJsas(docs.map((d) => toMutable(d.toJSON())))
+          setJsas(docs.map((d) => toMutable<JsaDoc>(d.toJSON())))
           setLoading(false)
         })
     })

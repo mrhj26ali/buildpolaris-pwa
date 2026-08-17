@@ -1,9 +1,4 @@
-// Per-collection outbox replay. Each writable collection gets one function here
-// rather than one generic "replay any doc" function, because the BFF endpoint
-// path and payload shape genuinely differ per DocType (UC-6.1..6.4's own
-// sequence diagrams show distinct POST paths) — forcing one generic shape would
-// just move the per-collection knowledge into a big switch statement instead of
-// here, where it's next to the schema it serializes.
+// Per-collection outbox replay. Now unified to use the BFF's single sync_offline_write endpoint.
 
 import { bffRequest, BffApiError } from '@/lib/clients/bffClient'
 import { deriveIdempotencyKey } from './idempotencyKey'
@@ -33,19 +28,60 @@ export interface OutboxDrainResult {
   failed: number
 }
 
+// A loose type to satisfy TypeScript when stripping RxDB metadata
+type RxDbDoc = Record<string, unknown> & {
+  local_uuid: string
+  sync_status?: string
+  queued_at?: string
+  synced_at?: string | null
+  server_id?: string | null
+  _rev?: string
+}
+
+// Map PWA collection names to exact BFF DocType names
+const DOCTYPE_MAP: Record<WritableFieldCollection, string> = {
+  daily_logs: 'Daily Log',
+  jsas: 'JSA',
+  incidents: 'Safety Incident',
+  punch_items: 'Punch List Item',
+}
+
 async function replayOne(
   collection: WritableFieldCollection,
   localUuid: string,
-  path: string,
-  payload: Record<string, unknown>,
+  docData: RxDbDoc,
 ): Promise<SyncApplyResult> {
+  const doctype = DOCTYPE_MAP[collection]
+  const idempotencyKey = deriveIdempotencyKey(collection, localUuid)
+
+  // Strip out RxDB-specific sync fields before sending to BFF.
+  // Prefixing with '_' tells the linter we intentionally don't use these values.
+  const { 
+    sync_status: _sync_status, 
+    queued_at: _queued_at, 
+    synced_at: _synced_at, 
+    local_uuid: _local_uuid, 
+    server_id: _server_id, 
+    _rev, 
+    ...cleanPayload 
+  } = docData
+
   try {
-    const result = await bffRequest<SyncApplyResult>(
-      path,
-      { method: 'POST', body: JSON.stringify(payload) },
-      { idempotencyKey: deriveIdempotencyKey(collection, localUuid) },
+    const result = await bffRequest<{ message: SyncApplyResult }>(
+      '/method/buildpolaris_bff.field.api.sync_offline_write',
+      { 
+        method: 'POST', 
+        body: JSON.stringify({ 
+          doctype, 
+          payload: cleanPayload, 
+          local_uuid: localUuid, 
+          idempotency_key: idempotencyKey 
+        }) 
+      },
+      { idempotencyKey }
     )
-    return result
+    // Unwrap Frappe's success envelope
+    return result.message
   } catch (error) {
     return {
       local_uuid: localUuid,
@@ -57,22 +93,15 @@ async function replayOne(
 
 async function drainDailyLogs(): Promise<OutboxDrainResult> {
   const pending = await findPendingDailyLogs()
-  let synced = 0
-  let conflicted = 0
-  let failed = 0
+  let synced = 0, conflicted = 0, failed = 0
 
   for (const doc of pending) {
-    const result = await replayOne(
-      'daily_logs',
-      doc.local_uuid,
-      '/method/buildpolaris_bff.field.api.sync_daily_log',
-      { ...doc },
-    )
+    const result = await replayOne('daily_logs', doc.local_uuid, doc as unknown as RxDbDoc)
     if (result.outcome === 'applied' && result.server_id) {
       await markDailyLogSynced(doc.local_uuid, result.server_id)
       synced += 1
     } else if (result.outcome === 'conflict') {
-      resolveConflict('daily_logs', result) // deterministic — logged, never surfaced
+      resolveConflict('daily_logs', result)
       conflicted += 1
     } else {
       failed += 1
@@ -83,17 +112,10 @@ async function drainDailyLogs(): Promise<OutboxDrainResult> {
 
 async function drainJsas(): Promise<OutboxDrainResult> {
   const pending = await findPendingJsas()
-  let synced = 0
-  let conflicted = 0
-  let failed = 0
+  let synced = 0, conflicted = 0, failed = 0
 
   for (const doc of pending) {
-    const result = await replayOne(
-      'jsas',
-      doc.local_uuid,
-      '/method/buildpolaris_bff.field.api.sync_jsa',
-      { ...doc },
-    )
+    const result = await replayOne('jsas', doc.local_uuid, doc as unknown as RxDbDoc)
     if (result.outcome === 'applied' && result.server_id) {
       await markJsaSynced(doc.local_uuid, result.server_id)
       synced += 1
@@ -109,17 +131,10 @@ async function drainJsas(): Promise<OutboxDrainResult> {
 
 async function drainIncidents(): Promise<OutboxDrainResult> {
   const pending = await findPendingSafetyIncidents()
-  let synced = 0
-  let conflicted = 0
-  let failed = 0
+  let synced = 0, conflicted = 0, failed = 0
 
   for (const doc of pending) {
-    const result = await replayOne(
-      'incidents',
-      doc.local_uuid,
-      '/method/buildpolaris_bff.field.api.sync_safety_incident',
-      { ...doc },
-    )
+    const result = await replayOne('incidents', doc.local_uuid, doc as unknown as RxDbDoc)
     if (result.outcome === 'applied' && result.server_id) {
       await markSafetyIncidentSynced(doc.local_uuid, result.server_id)
       synced += 1
@@ -135,26 +150,16 @@ async function drainIncidents(): Promise<OutboxDrainResult> {
 
 async function drainPunchItems(): Promise<OutboxDrainResult> {
   const pending = await findPendingPunchItems()
-  let synced = 0
-  let conflicted = 0
-  let failed = 0
+  let synced = 0, conflicted = 0, failed = 0
 
   for (const doc of pending) {
-    const result = await replayOne(
-      'punch_items',
-      doc.local_uuid,
-      '/method/buildpolaris_bff.field.api.sync_punch_item',
-      { ...doc },
-    )
+    const result = await replayOne('punch_items', doc.local_uuid, doc as unknown as RxDbDoc)
     if (result.outcome === 'applied' && result.server_id) {
       await markPunchItemSynced(doc.local_uuid, result.server_id)
       synced += 1
     } else if (result.outcome === 'conflict') {
       const decision = resolveConflict('punch_items', result)
       if (decision.action === 'surface') {
-        // ERD §5.4: never silently overwritten — mark conflicted, the
-        // PunchListConflictResolver.tsx UI queries this state and shows both
-        // versions (server_version arrives on the SyncApplyResult itself).
         await markPunchItemConflict(doc.local_uuid)
       }
       conflicted += 1
@@ -166,7 +171,6 @@ async function drainPunchItems(): Promise<OutboxDrainResult> {
 }
 
 export async function drainAllOutboxes(): Promise<OutboxDrainResult[]> {
-  // Ensure the DB is ready before any drain function touches a collection.
   await getDatabase()
   return Promise.all([drainDailyLogs(), drainJsas(), drainIncidents(), drainPunchItems()])
 }

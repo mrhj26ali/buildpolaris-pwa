@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { SubmittalLineStatus } from '@/types/domain'
 import {
   listRfis,
   createRfi,
@@ -72,7 +73,7 @@ export function useCreateSubmittal(project: string) {
 export function useReviewSubmittalLine(project: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ submittal, line, status }: { submittal: string; line: string; status: string }) =>
+    mutationFn: ({ submittal, line, status }: { submittal: string; line: string; status: SubmittalLineStatus }) =>
       reviewSubmittalLine(submittal, line, status),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.submittals(project) }),
   })

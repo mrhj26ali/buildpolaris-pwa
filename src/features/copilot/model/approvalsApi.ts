@@ -13,15 +13,15 @@ export async function listPendingApprovals(project?: string): Promise<AgentActio
 }
 
 export async function approveAction(approvalName: string): Promise<AgentActionApproval> {
-  return bffRequest<AgentActionApproval>('/method/buildpolaris_bff.ai_copilot.api.approve_action', {
+  return bffRequest<AgentActionApproval>('/method/buildpolaris_bff.ai_copilot.api.approve_agent_action', {
     method: 'POST',
-    body: JSON.stringify({ name: approvalName }),
+    body: JSON.stringify({ action: approvalName }), // Note: BFF expects 'action'
   }, { idempotencyKey: `approval-approve:${approvalName}` })
 }
 
 export async function rejectAction(approvalName: string, reason?: string): Promise<AgentActionApproval> {
-  return bffRequest<AgentActionApproval>('/method/buildpolaris_bff.ai_copilot.api.reject_action', {
+  return bffRequest<AgentActionApproval>('/method/buildpolaris_bff.ai_copilot.api.reject_agent_action', {
     method: 'POST',
-    body: JSON.stringify({ name: approvalName, reason }),
+    body: JSON.stringify({ action: approvalName, reason }), // Note: BFF expects 'action'
   }, { idempotencyKey: `approval-reject:${approvalName}` })
 }

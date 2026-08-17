@@ -42,7 +42,7 @@ export function SubmittalList({ project }: { project: string }) {
                 <span className="text-sm">{line.description}</span>
                 <Select
                   value={line.status}
-                  onValueChange={(status) =>
+                  onValueChange={(status: SubmittalLineStatus) =>
                     void reviewMutation.mutateAsync({ submittal: pkg.name, line: line.name, status })
                   }
                 >

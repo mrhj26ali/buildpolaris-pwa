@@ -43,3 +43,4 @@ coverage/
 IMPLEMENTATION_CHANGES.txt
 tests/
 a.ps1
+dump_code.py
