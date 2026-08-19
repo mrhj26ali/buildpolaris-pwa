@@ -33,7 +33,7 @@ export const punchItemSchema: RxJsonSchema<PunchItemDoc> = {
     sync_status: { type: 'string', enum: ['pending', 'synced', 'conflict'], maxLength: 16 },
     queued_at: { type: 'string', format: 'date-time', maxLength: 32 },
     synced_at: { type: ['string', 'null'], format: 'date-time' },
-    _rev: { type: 'string' },
+    
   },
   required: ['local_uuid', 'project', 'description', 'status', 'sync_status', 'queued_at'],
   indexes: ['project', 'sync_status', 'status'],

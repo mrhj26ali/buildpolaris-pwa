@@ -83,7 +83,7 @@ export async function listPayApplications(project: string): Promise<PayApplicati
 }
 
 export async function submitPayApplication(name: string): Promise<PayApplication> {
-  return bffRequest<PayApplication>('/method/buildpolaris_bff.financials.api.submit_pay_application', {
+  return bffRequest<PayApplication>('/method/buildpolaris_bff.financials.api.submit_pay_application_for_approval', {
     method: 'POST',
     body: JSON.stringify({ name }),
   })

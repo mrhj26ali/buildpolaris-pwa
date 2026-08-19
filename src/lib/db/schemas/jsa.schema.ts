@@ -24,7 +24,6 @@ export const jsaSchema: RxJsonSchema<JsaDoc> = {
     sync_status: { type: 'string', enum: ['pending', 'synced', 'conflict'], maxLength: 16 },
     queued_at: { type: 'string', format: 'date-time', maxLength: 32 },
     synced_at: { type: ['string', 'null'], format: 'date-time' },
-    _rev: { type: 'string' },
     project: { type: 'string', maxLength: 64 },
     jsa_date: { type: 'string', maxLength: 10 },
     crew: { type: 'string' },

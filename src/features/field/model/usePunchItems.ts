@@ -23,7 +23,10 @@ export function usePunchItems(project: string | undefined) {
         setItems(docs.map((d) => toMutable(d.toJSON())))
         setLoading(false)
       })
-    })
+    }).catch((error) => {
+        console.error("RxDB Initialization Error:", error)
+        setLoading(false) // Prevent infinite loading if DB fails
+      })
 
     return () => subscription?.unsubscribe()
   }, [project])

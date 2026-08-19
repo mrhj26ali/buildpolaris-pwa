@@ -16,8 +16,7 @@ export async function insertPunchItem(input: PunchItemInput): Promise<PunchItemD
     server_id: null,
     sync_status: 'pending',
     queued_at: nowIso(),
-    synced_at: null,
-    _rev: '',
+    synced_at: null
   }
   const inserted = await db.punch_items.insert(doc)
   return toMutable(inserted.toJSON())

@@ -20,7 +20,10 @@ export function useSafetyIncidents(project: string | undefined) {
           setIncidents(docs.map((d) => toMutable<SafetyIncidentDoc>(d.toJSON())))
           setLoading(false)
         })
-    })
+    }).catch((error) => {
+        console.error("RxDB Initialization Error:", error)
+        setLoading(false) // Prevent infinite loading if DB fails
+      })
 
     return () => subscription?.unsubscribe()
   }, [project])

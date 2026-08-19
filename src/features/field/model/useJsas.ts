@@ -20,7 +20,10 @@ export function useJsas(project: string | undefined) {
           setJsas(docs.map((d) => toMutable<JsaDoc>(d.toJSON())))
           setLoading(false)
         })
-    })
+    }).catch((error) => {
+        console.error("RxDB Initialization Error:", error)
+        setLoading(false) // Prevent infinite loading if DB fails
+      })
 
     return () => subscription?.unsubscribe()
   }, [project])

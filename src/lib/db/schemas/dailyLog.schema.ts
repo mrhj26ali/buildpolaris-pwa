@@ -46,7 +46,6 @@ export const dailyLogSchema: RxJsonSchema<DailyLogDoc> = {
     sync_status: { type: 'string', enum: ['pending', 'synced', 'conflict'], maxLength: 16 },
     queued_at: { type: 'string', format: 'date-time', maxLength: 32 },
     synced_at: { type: ['string', 'null'], format: 'date-time' },
-    _rev: { type: 'string' },
     project: { type: 'string', maxLength: 64 },
     log_date: { type: 'string', maxLength: 10 },
     submitted_by: { type: 'string' },

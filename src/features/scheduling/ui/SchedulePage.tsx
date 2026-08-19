@@ -66,7 +66,11 @@ export default function SchedulePage() {
       {tasks.length === 0 ? (
         <EmptyState title="No tasks yet" description="Add your first task to start building the schedule." />
       ) : (
-        <VirtualizedGantt tasks={tasks} previewByName={previewByName} />
+        <VirtualizedGantt 
+          tasks={tasks} 
+          previewByName={previewByName} 
+          projectDuration={preview ? preview.result.project_duration : 30}
+        />
       )}
 
       {preview && preview.health.negative_float_tasks.length > 0 && (

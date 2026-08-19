@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useProjectContext } from '@/app/providers/ProjectContext'
 import { ChevronDown, LogOut, User } from 'lucide-react'
+// 1. Import your existing CreateProjectDialog
+import { CreateProjectDialog } from '@/features/projects/ui/CreateProjectDialog' 
 
 export function HeaderBar() {
   const { session, logout } = useAuth()
@@ -32,6 +34,13 @@ export function HeaderBar() {
               {project.title}
             </DropdownMenuItem>
           ))}
+          
+          {/* 2. ADD THIS: Separator and the Create Project Dialog Trigger */}
+          {session?.projects && session.projects.length > 0 && <DropdownMenuSeparator />}
+          
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <CreateProjectDialog onCreated={() => window.location.reload()} />
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 

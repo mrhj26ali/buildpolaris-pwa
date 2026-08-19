@@ -16,8 +16,7 @@ export async function insertDailyLog(input: DailyLogInput): Promise<DailyLogDoc>
     server_id: null,
     sync_status: 'pending',
     queued_at: nowIso(),
-    synced_at: null,
-    _rev: '',
+    synced_at: null
   }
   const inserted = await db.daily_logs.insert(doc)
   return toMutable<DailyLogDoc>(inserted.toJSON())

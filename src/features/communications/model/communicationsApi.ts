@@ -63,7 +63,7 @@ export async function reviewSubmittalLine(
 ): Promise<SubmittalPackage> {
   return bffRequest<SubmittalPackage>('/method/buildpolaris_bff.communications.api.review_submittal_line', {
     method: 'POST',
-    body: JSON.stringify({ submittal, line: lineName, status }),
+    body: JSON.stringify({ submittal, line_name: lineName, status }),
   })
 }
 

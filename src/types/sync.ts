@@ -11,7 +11,7 @@ export interface SyncEnvelope {
   sync_status: SyncStatus
   queued_at: string // ISO 8601
   synced_at: string | null // ISO 8601
-  _rev: string // RxDB's own revision, for local conflict detection
+  
 }
 
 // The four writable offline collections (ERD §5.1 / §3.4 design note).

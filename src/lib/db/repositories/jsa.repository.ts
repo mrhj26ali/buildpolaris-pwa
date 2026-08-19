@@ -16,8 +16,7 @@ export async function insertJsa(input: JsaInput): Promise<JsaDoc> {
     server_id: null,
     sync_status: 'pending',
     queued_at: nowIso(),
-    synced_at: null,
-    _rev: '',
+    synced_at: null
   }
   const inserted = await db.jsas.insert(doc)
   return toMutable<JsaDoc>(inserted.toJSON())

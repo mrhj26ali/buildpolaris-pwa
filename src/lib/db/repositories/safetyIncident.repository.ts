@@ -16,8 +16,7 @@ export async function insertSafetyIncident(input: SafetyIncidentInput): Promise<
     server_id: null,
     sync_status: 'pending',
     queued_at: nowIso(),
-    synced_at: null,
-    _rev: '',
+    synced_at: null
   }
   const inserted = await db.incidents.insert(doc)
   return toMutable<SafetyIncidentDoc>(inserted.toJSON())

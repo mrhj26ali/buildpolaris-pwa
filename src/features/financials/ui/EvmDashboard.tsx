@@ -5,7 +5,8 @@ import { formatCurrency, formatCompactCurrency } from '@/lib/utils/currency'
 import { formatDate } from '@/lib/utils/date'
 import { cn } from '@/lib/utils'
 
-function performanceColor(index: number): string {
+function performanceColor(index: number | null): string {
+  if (index === null) return 'text-muted-foreground'
   if (index >= 1) return 'text-status-ontrack'
   if (index >= 0.9) return 'text-status-atrisk'
   return 'text-status-overdue'
@@ -50,15 +51,23 @@ export function EvmDashboard({ project }: { project: string }) {
         <Card>
           <CardHeader><CardTitle className="text-sm">Cost Performance Index</CardTitle></CardHeader>
           <CardContent>
-            <p className={cn('text-3xl font-bold', performanceColor(evm.cpi))}>{evm.cpi.toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">{evm.cpi >= 1 ? 'Under budget' : 'Over budget'}</p>
+            <p className={cn('text-3xl font-bold', performanceColor(evm.cpi))}>
+              {evm.cpi !== null ? evm.cpi.toFixed(2) : '—'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {evm.cpi !== null ? (evm.cpi >= 1 ? 'Under budget' : 'Over budget') : 'No data'}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader><CardTitle className="text-sm">Schedule Performance Index</CardTitle></CardHeader>
           <CardContent>
-            <p className={cn('text-3xl font-bold', performanceColor(evm.spi))}>{evm.spi.toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">{evm.spi >= 1 ? 'Ahead of schedule' : 'Behind schedule'}</p>
+            <p className={cn('text-3xl font-bold', performanceColor(evm.spi))}>
+              {evm.spi !== null ? evm.spi.toFixed(2) : '—'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {evm.spi !== null ? (evm.spi >= 1 ? 'Ahead of schedule' : 'Behind schedule') : 'No data'}
+            </p>
           </CardContent>
         </Card>
       </div>
