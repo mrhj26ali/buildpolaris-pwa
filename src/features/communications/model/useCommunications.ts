@@ -13,8 +13,12 @@ import {
   listMeetingMinutes,
   listActionItems,
   completeActionItem,
+  issueTransmittal,
+  searchCommunications,
   type CreateRfiPayload,
   type CreateSubmittalPayload,
+  type IssueTransmittalPayload,
+  type UnifiedSearchResult,
 } from './communicationsApi'
 
 const keys = {
@@ -26,6 +30,12 @@ const keys = {
   actionItems: (p: string) => ['communications', 'action-items', p] as const,
 }
 
+// Helper to invalidate both the specific list AND the global project summary
+const invalidateAll = (qc: any, project: string, listKey: readonly any[]) => {
+  qc.invalidateQueries({ queryKey: listKey })
+  qc.invalidateQueries({ queryKey: ['projects', 'summary', project] })
+}
+
 export function useRfis(project: string | undefined) {
   return useQuery({ queryKey: keys.rfis(project ?? ''), queryFn: () => listRfis(project!), enabled: !!project })
 }
@@ -34,7 +44,7 @@ export function useCreateRfi(project: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (payload: CreateRfiPayload) => createRfi(payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rfis(project) }),
+    onSuccess: () => invalidateAll(qc, project, keys.rfis(project)),
   })
 }
 
@@ -42,7 +52,7 @@ export function useRespondToRfi(project: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ name, response }: { name: string; response: string }) => respondToRfi(name, response),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rfis(project) }),
+    onSuccess: () => invalidateAll(qc, project, keys.rfis(project)),
   })
 }
 
@@ -50,7 +60,7 @@ export function useCloseRfi(project: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (name: string) => closeRfi(name),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rfis(project) }),
+    onSuccess: () => invalidateAll(qc, project, keys.rfis(project)),
   })
 }
 
@@ -66,7 +76,7 @@ export function useCreateSubmittal(project: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (payload: CreateSubmittalPayload) => createSubmittal(payload),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.submittals(project) }),
+    onSuccess: () => invalidateAll(qc, project, keys.submittals(project)),
   })
 }
 
@@ -75,7 +85,7 @@ export function useReviewSubmittalLine(project: string) {
   return useMutation({
     mutationFn: ({ submittal, line, status }: { submittal: string; line: string; status: SubmittalLineStatus }) =>
       reviewSubmittalLine(submittal, line, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.submittals(project) }),
+    onSuccess: () => invalidateAll(qc, project, keys.submittals(project)),
   })
 }
 
@@ -115,6 +125,22 @@ export function useCompleteActionItem(project: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (name: string) => completeActionItem(name),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.actionItems(project) }),
+    onSuccess: () => invalidateAll(qc, project, keys.actionItems(project)),
+  })
+}
+
+export function useIssueTransmittal(project: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (payload: IssueTransmittalPayload) => issueTransmittal(payload),
+    onSuccess: () => invalidateAll(qc, project, keys.transmittals(project)),
+  })
+}
+
+export function useUnifiedSearch(project: string | undefined, status?: string, assignee?: string) {
+  return useQuery<UnifiedSearchResult>({
+    queryKey: ['communications', 'unified-search', project, status, assignee],
+    queryFn: () => searchCommunications(project!, status, assignee),
+    enabled: !!project,
   })
 }

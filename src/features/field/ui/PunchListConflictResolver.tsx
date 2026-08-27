@@ -15,10 +15,12 @@ const STATUSES: PunchItemStatus[] = ['Open', 'InProgress', 'Closed']
 // to confirm before re-submitting." This is deliberately the ONLY UI in the
 // field slice that asks the user to pick between two versions of a record —
 // every other collection is append-only and never reaches this component.
-export function PunchListConflictResolver({ item }: { item: PunchItemDoc }) {
+export function PunchListConflictResolver({ item, project }: { item: PunchItemDoc; project: string }) {
   const [status, setStatus] = useState<PunchItemStatus>(item.status)
   const [assignedTo, setAssignedTo] = useState(item.assigned_to)
-  const resolveConflict = useResolvePunchItemConflict()
+  
+  // ✅ FIX: Pass project to the hook
+  const resolveConflict = useResolvePunchItemConflict(project)
   const [resolving, setResolving] = useState(false)
 
   // NOTE: the server's competing version arrives via the SyncApplyResult at

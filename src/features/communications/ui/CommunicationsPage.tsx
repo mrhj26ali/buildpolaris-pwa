@@ -1,5 +1,6 @@
 import { useProjectContext } from '@/app/providers/ProjectContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { UnifiedDashboard } from './UnifiedDashboard'
 import { RfiList } from './RfiList'
 import { SubmittalList } from './SubmittalList'
 import { TransmittalList } from './TransmittalList'
@@ -21,16 +22,23 @@ export default function CommunicationsPage() {
     <div className="flex flex-col gap-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold">Communications</h1>
-        <p className="text-sm text-muted-foreground">RFIs, submittals, and coordination for {activeProject.title}</p>
+        <p className="text-sm text-muted-foreground">
+          Unified dashboard and detailed logs for {activeProject.title}
+        </p>
       </div>
 
-      <Tabs defaultValue="rfis">
-        <TabsList>
+      <Tabs defaultValue="unified">
+        <TabsList className="min-h-11">
+          <TabsTrigger value="unified" className="min-h-11">Unified Dashboard</TabsTrigger>
           <TabsTrigger value="rfis" className="min-h-11">RFIs</TabsTrigger>
           <TabsTrigger value="submittals" className="min-h-11">Submittals</TabsTrigger>
           <TabsTrigger value="transmittals" className="min-h-11">Transmittals</TabsTrigger>
           <TabsTrigger value="meetings" className="min-h-11">Meetings</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="unified" className="mt-4">
+          <UnifiedDashboard project={activeProject.name} />
+        </TabsContent>
         <TabsContent value="rfis" className="mt-4">
           <RfiList project={activeProject.name} />
         </TabsContent>

@@ -1,11 +1,6 @@
 import type { RxJsonSchema } from 'rxdb'
 import type { SyncEnvelope } from '@/types/sync'
 
-// Mirrors BFF "Daily Log" + child tables (ERD §3.4). Field names are kept
-// identical to the BFF DocType's own field names deliberately (ERD §3.4 design
-// note): "keeping the BFF-side field names identical to the RxDB collection
-// field names... is what keeps the sync mapping a straight pass-through."
-
 export interface DailyLogLaborLine {
   trade: string
   headcount: number
@@ -18,8 +13,8 @@ export interface DailyLogEquipmentLine {
 }
 
 export interface DailyLogMediaCapture {
-  local_file_ref: string // client-side blob/File reference before upload
-  file: string | null // MariaDB File.name once uploaded (UC-5.3)
+  local_file_ref: string
+  file: string | null
   latitude: number | null
   longitude: number | null
   captured_at: string
@@ -45,21 +40,22 @@ export const dailyLogSchema: RxJsonSchema<DailyLogDoc> = {
     server_id: { type: ['string', 'null'] },
     sync_status: { type: 'string', enum: ['pending', 'synced', 'conflict'], maxLength: 16 },
     queued_at: { type: 'string', format: 'date-time', maxLength: 32 },
-    synced_at: { type: ['string', 'null'], format: 'date-time' },
+    synced_at: { type: ['string', 'null'], format: 'date-time', maxLength: 32 },
     project: { type: 'string', maxLength: 64 },
     log_date: { type: 'string', maxLength: 10 },
-    submitted_by: { type: 'string' },
-    weather: { type: 'string' },
-    notes: { type: 'string' },
+    submitted_by: { type: 'string', maxLength: 128 },
+    weather: { type: 'string', maxLength: 128 },
+    notes: { type: 'string', maxLength: 2048 },
     labor_lines: {
       type: 'array',
       items: {
         type: 'object',
         properties: {
-          trade: { type: 'string' },
+          trade: { type: 'string', maxLength: 128 },
           headcount: { type: 'number' },
           hours: { type: 'number' },
         },
+        required: ['trade', 'headcount', 'hours'],
       },
     },
     equipment_lines: {
@@ -67,9 +63,10 @@ export const dailyLogSchema: RxJsonSchema<DailyLogDoc> = {
       items: {
         type: 'object',
         properties: {
-          equipment: { type: 'string' },
+          equipment: { type: 'string', maxLength: 128 },
           hours_used: { type: 'number' },
         },
+        required: ['equipment', 'hours_used'],
       },
     },
     media: {
@@ -77,15 +74,15 @@ export const dailyLogSchema: RxJsonSchema<DailyLogDoc> = {
       items: {
         type: 'object',
         properties: {
-          local_file_ref: { type: 'string' },
-          file: { type: ['string', 'null'] },
+          local_file_ref: { type: 'string', maxLength: 128 },
+          file: { type: ['string', 'null'], maxLength: 256 },
           latitude: { type: ['number', 'null'] },
           longitude: { type: ['number', 'null'] },
-          captured_at: { type: 'string' },
+          captured_at: { type: 'string', format: 'date-time', maxLength: 32 },
         },
+        required: ['local_file_ref', 'captured_at'],
       },
     },
   },
   required: ['local_uuid', 'project', 'log_date', 'sync_status', 'queued_at'],
-  indexes: ['project', 'sync_status', 'log_date'],
 }

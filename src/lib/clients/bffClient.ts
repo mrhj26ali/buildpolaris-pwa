@@ -227,3 +227,29 @@ class BffClient {
 }
 
 export const bffClient = new BffClient()
+
+/**
+ * Uploads a file to Frappe's native File doctype.
+ * Returns the name of the created File doc (e.g., "filename.jpg").
+ */
+export async function uploadFile(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('is_private', '1')
+  
+  const csrf = await getCsrfToken()
+  const response = await fetch(`${BFF_BASE_URL}/method/upload_file`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+    headers: { 'X-Frappe-CSRF-Token': csrf },
+  })
+  
+  if (!response.ok) {
+    throw new BffApiError({ status: response.status, message: 'File upload failed' })
+  }
+  
+  const data = await response.json()
+  // Frappe returns { message: { name: "...", file_url: "..." } }
+  return data.message?.name || data.message?.file_name
+}

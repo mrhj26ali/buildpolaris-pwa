@@ -1,11 +1,6 @@
 import type { RxJsonSchema } from 'rxdb'
 import type { SyncEnvelope } from '@/types/sync'
 
-// This is ERD §5.3's worked example verbatim — the one collection where a real
-// conflict is possible (a field close colliding with a PM reassignment while
-// offline). lib/sync/conflictResolver.ts's punch_items strategy is the only
-// non-append-only branch in the whole sync engine.
-
 export type PunchItemStatus = 'Open' | 'InProgress' | 'Closed'
 
 export interface PunchItemDoc extends SyncEnvelope {
@@ -25,15 +20,15 @@ export const punchItemSchema: RxJsonSchema<PunchItemDoc> = {
     local_uuid: { type: 'string', maxLength: 64 },
     server_id: { type: ['string', 'null'] },
     project: { type: 'string', maxLength: 64 },
-    location: { type: 'string' },
-    description: { type: 'string' },
-    assigned_to: { type: 'string' },
-    status: { type: 'string', enum: ['Open', 'InProgress', 'Closed'] },
-    rfi: { type: ['string', 'null'] },
+    location: { type: 'string', maxLength: 128 },
+    description: { type: 'string', maxLength: 1024 },
+    assigned_to: { type: 'string', maxLength: 128 },
+    // ✅ FIX: Added maxLength: 16 because 'status' is in the indexes array
+    status: { type: 'string', enum: ['Open', 'InProgress', 'Closed'], maxLength: 16 },
+    rfi: { type: ['string', 'null'], maxLength: 64 },
     sync_status: { type: 'string', enum: ['pending', 'synced', 'conflict'], maxLength: 16 },
     queued_at: { type: 'string', format: 'date-time', maxLength: 32 },
-    synced_at: { type: ['string', 'null'], format: 'date-time' },
-    
+    synced_at: { type: ['string', 'null'], format: 'date-time', maxLength: 32 },
   },
   required: ['local_uuid', 'project', 'description', 'status', 'sync_status', 'queued_at'],
   indexes: ['project', 'sync_status', 'status'],

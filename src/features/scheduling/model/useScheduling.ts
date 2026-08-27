@@ -8,6 +8,7 @@ import {
   recomputeSchedule,
   captureBaseline,
   listBaselines,
+  getDcmaHealthCheck,
   type CreateTaskPayload,
   type UpdateTaskDatesPayload,
   type CreateDependencyPayload,
@@ -87,5 +88,15 @@ export function useCaptureBaseline(project: string) {
   return useMutation({
     mutationFn: (label: string) => captureBaseline(project, label),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: baselineKeys(project) }),
+  })
+}
+
+// NEW: Hook to fetch the authoritative DCMA 14-point report
+export function useDcmaHealthCheck(project: string | undefined) {
+  return useQuery({
+    queryKey: ['scheduling', 'dcma-health', project],
+    queryFn: () => getDcmaHealthCheck(project!),
+    enabled: !!project,
+    refetchInterval: 60000, // Refresh every minute
   })
 }

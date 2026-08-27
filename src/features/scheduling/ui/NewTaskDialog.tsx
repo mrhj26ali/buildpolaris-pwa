@@ -10,13 +10,20 @@ export function NewTaskDialog({ project }: { project: string }) {
   const [open, setOpen] = useState(false)
   const [subject, setSubject] = useState('')
   const [duration, setDuration] = useState(1)
+  const [assignedTo, setAssignedTo] = useState('') // NEW: DCMA Point 11
   const createMutation = useCreateTask(project)
 
   async function handleCreate() {
-    await createMutation.mutateAsync({ project, subject, duration })
+    await createMutation.mutateAsync({
+      project,
+      subject,
+      duration,
+      assigned_to: assignedTo || undefined,
+    })
     setOpen(false)
     setSubject('')
     setDuration(1)
+    setAssignedTo('')
   }
 
   return (
@@ -45,6 +52,19 @@ export function NewTaskDialog({ project }: { project: string }) {
               value={duration}
               onChange={(e) => setDuration(Number(e.target.value))}
             />
+          </div>
+          {/* NEW: DCMA Point 11 Resource Assignment */}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="task-assigned-to">Assigned To (Resource/Crew)</Label>
+            <Input
+              id="task-assigned-to"
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              placeholder="e.g. Electrical Crew, John Doe, Subcontractor X"
+            />
+            <p className="text-xs text-muted-foreground">
+              Required for DCMA compliance. Can be a user, crew, or company.
+            </p>
           </div>
         </div>
         <DialogFooter>

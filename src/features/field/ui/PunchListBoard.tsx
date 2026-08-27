@@ -17,7 +17,9 @@ const STATUSES: PunchItemStatus[] = ['Open', 'InProgress', 'Closed']
 
 export function PunchListBoard({ project }: { project: string }) {
   const { items, conflicted, loading } = usePunchItems(project)
-  const updateStatus = useUpdatePunchItemStatus()
+  
+  // ✅ FIX: Pass project to the hook
+  const updateStatus = useUpdatePunchItemStatus(project)
 
   if (loading) return <LoadingState label="Loading punch list…" />
 
@@ -28,7 +30,8 @@ export function PunchListBoard({ project }: { project: string }) {
       {conflicted.length > 0 && (
         <div className="flex flex-col gap-2">
           {conflicted.map((item) => (
-            <PunchListConflictResolver key={item.local_uuid} item={item} />
+            // ✅ FIX: Pass project down to the resolver
+            <PunchListConflictResolver key={item.local_uuid} item={item} project={project} />
           ))}
         </div>
       )}
@@ -77,7 +80,9 @@ function NewPunchItemDialog({ project }: { project: string }) {
   const [description, setDescription] = useState('')
   const [assignedTo, setAssignedTo] = useState('')
   const { session } = useAuth()
-  const { create, submitting } = useCreatePunchItem()
+  
+  // ✅ FIX: Pass project to the hook
+  const { create, submitting } = useCreatePunchItem(project)
 
   async function handleCreate() {
     await create({

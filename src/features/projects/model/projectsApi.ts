@@ -1,10 +1,5 @@
 ﻿import { bffRequest } from '@/lib/clients/bffClient'
 
-// Cross-module summary shown on the dashboard landing page. This intentionally
-// stays a thin read model — the dashboard is a jumping-off point to each
-// module's own detail screens (Flowcharts §2's "M8 cuts across every module"
-// diagram is the mental model: the dashboard is the human-facing analogue,
-// giving a project-wide glance before drilling into M2..M7).
 export interface ProjectSummary {
   project: string
   title: string
@@ -33,18 +28,34 @@ export interface Project {
   expected_end_date: string | null
   percent_complete: number
   company: string
+  holiday_list: string | null
 }
 
 export interface CreateProjectInput {
   project_name: string
+  reference_code: string
+  client_name: string
   description?: string
   expected_start_date?: string
   expected_end_date?: string
+  budget_amount?: number
+  currency?: string
+  initial_tasks?: Array<{ subject: string; duration: number }> // NEW
+  holiday_list?: string // <-- ADD THIS
 }
 
-// buildpolaris_bff.bp_projects.api.create_project resolves the acting user's
-// own Company server-side (never trusted from the client) — this payload
-// deliberately has no company field. See projects/services/project_service.py.
+export interface ProjectHoliday {
+  date: string
+  description: string
+}
+
+export async function getProjectHolidays(project: string): Promise<ProjectHoliday[]> {
+  return bffRequest<ProjectHoliday[]>(
+    `/method/buildpolaris_bff.bp_projects.api.get_project_holidays?project=${encodeURIComponent(project)}`,
+    { method: 'GET' }
+  )
+}
+
 export async function createProject(input: CreateProjectInput): Promise<Project> {
   return bffRequest<Project>('/method/buildpolaris_bff.bp_projects.api.create_project', {
     method: 'POST',
@@ -65,4 +76,24 @@ export async function listProjects(status?: string): Promise<Project[]> {
     `/method/buildpolaris_bff.bp_projects.api.list_projects${query}`,
     { method: 'GET' },
   )
+}
+
+export async function listHolidayLists(): Promise<{ name: string; holiday_list_name: string }[]> {
+  return bffRequest<{ name: string; holiday_list_name: string }[]>(
+    '/method/buildpolaris_bff.bp_projects.api.list_holiday_lists',
+    { method: 'GET' }
+  )
+}
+
+export interface CreateHolidayListPayload {
+  list_name: string
+  holidays: Array<{ date: string; description?: string }>
+  weekly_off?: string // <-- ADD THIS
+}
+
+export async function createHolidayList(payload: CreateHolidayListPayload): Promise<{ name: string; holiday_list_name: string }> {
+  return bffRequest('/method/buildpolaris_bff.bp_projects.api.create_holiday_list', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }

@@ -120,3 +120,39 @@ export async function recordMinutes(payload: RecordMinutesPayload): Promise<Meet
     body: JSON.stringify(payload),
   })
 }
+
+export interface IssueTransmittalPayload {
+  project: string
+  method: string
+  recipients: string[]
+  files: string[]
+}
+
+export async function issueTransmittal(payload: IssueTransmittalPayload): Promise<Transmittal> {
+  return bffRequest<Transmittal>('/method/buildpolaris_bff.communications.api.issue_transmittal', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+// FR-4.6: Unified Communications Search
+export interface UnifiedSearchResult {
+  rfis: Array<{ name: string; subject: string; status: string; assigned_to: string; due_date: string }>
+  submittals: Array<{ name: string; spec_section: string; status: string }>
+  transmittals: Array<{ name: string; sent_by: string; sent_at: string; method: string }>
+  action_items: Array<{ name: string; description: string; assignee: string; due_date: string; status: string }>
+}
+
+export async function searchCommunications(
+  project: string,
+  status?: string,
+  assignee?: string,
+): Promise<UnifiedSearchResult> {
+  const params = new URLSearchParams({ project })
+  if (status) params.append('status', status)
+  if (assignee) params.append('assignee', assignee)
+  
+  return bffRequest<UnifiedSearchResult>(
+    `/method/buildpolaris_bff.communications.api.search_communications?${params.toString()}`,
+    { method: 'GET' },
+  )
+}

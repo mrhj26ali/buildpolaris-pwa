@@ -6,7 +6,10 @@ import {
   uploadRevision,
   listAnnotations,
   createAnnotation,
+  promoteRevision,
+  getRevisionForDownload,
   type UploadRevisionPayload,
+  type GetRevisionForDownloadPayload,
 } from './documentControlApi'
 import { refreshDrawingRevisionsCache } from '../lib/refreshRevisionsCache'
 import { isOnline } from '@/lib/sync/reconnectListener'
@@ -65,5 +68,19 @@ export function useCreateAnnotation(revision: string) {
   return useMutation({
     mutationFn: (text: string) => createAnnotation(revision, text),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.annotations(revision) }),
+  })
+}
+
+export function usePromoteRevision(drawing: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (revision: string) => promoteRevision(revision),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.revisions(drawing) }),
+  })
+}
+
+export function useGetRevisionForDownload() {
+  return useMutation({
+    mutationFn: (payload: GetRevisionForDownloadPayload) => getRevisionForDownload(payload),
   })
 }

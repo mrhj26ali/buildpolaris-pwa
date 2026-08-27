@@ -13,7 +13,7 @@ const STORAGE_KEY = 'buildpolaris-theme'
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'system'
-    return (window.localStorage.getItem(STORAGE_KEY) as Theme | null) ?? 'system'
+    return (window.localStorage.getItem(STORAGE_KEY) as Theme | null) ?? 'light'
   })
 
   useEffect(() => {

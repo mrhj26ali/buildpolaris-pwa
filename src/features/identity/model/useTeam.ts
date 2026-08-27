@@ -31,3 +31,12 @@ export function useDisableUser() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: TEAM_QUERY_KEY }),
   })
 }
+import { updateUserProjects } from './identityApi'
+
+export function useUpdateUserProjects() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ email, projectNames }: { email: string; projectNames: string[] }) => updateUserProjects(email, projectNames),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: TEAM_QUERY_KEY }),
+  })
+}

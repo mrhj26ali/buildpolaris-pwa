@@ -59,3 +59,22 @@ export async function fetchCurrentRevisionsForOfflineCache(
     { method: 'GET' },
   )
 }
+
+export async function promoteRevision(revision: string): Promise<DrawingRevision> {
+  return bffRequest<DrawingRevision>('/method/buildpolaris_bff.document_control.api.promote_revision', {
+    method: 'POST',
+    body: JSON.stringify({ revision }),
+  })
+}
+
+export interface GetRevisionForDownloadPayload {
+  revision: string
+  override_reason?: string
+}
+
+export async function getRevisionForDownload(payload: GetRevisionForDownloadPayload): Promise<{ revision: string, is_current: boolean, file: string, issued_for: string }> {
+  return bffRequest('/method/buildpolaris_bff.document_control.api.get_revision_for_download', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}

@@ -9,6 +9,21 @@ import type {
   ChangeEventCategory,
 } from '@/types/domain'
 
+export interface CreateCostCodePayload {
+  project: string
+  code: string
+  description: string
+  budget_amount: number
+  cost_center?: string
+}
+
+export async function createCostCode(payload: CreateCostCodePayload): Promise<CostCode> {
+  return bffRequest<CostCode>('/method/buildpolaris_bff.financials.api.create_cost_code', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
 export async function listCostCodes(project: string): Promise<CostCode[]> {
   return bffRequest<CostCode[]>(
     `/method/buildpolaris_bff.financials.api.list_cost_codes?project=${encodeURIComponent(project)}`,
@@ -120,4 +135,7 @@ export async function createPayApplication(payload: CreatePayApplicationPayload)
     method: 'POST',
     body: JSON.stringify(payload),
   })
+}
+export async function listSuppliers(): Promise<string[]> {
+    return bffRequest<string[]>('/method/buildpolaris_bff.financials.api.list_suppliers', { method: 'GET' })
 }

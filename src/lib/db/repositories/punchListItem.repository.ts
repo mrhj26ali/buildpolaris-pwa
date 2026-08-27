@@ -44,7 +44,14 @@ export async function updatePunchItemStatus(localUuid: string, status: PunchItem
   const db = await getDatabase()
   const doc = await db.punch_items.findOne(localUuid).exec()
   if (!doc) return
-  await doc.patch({ status, sync_status: 'pending', queued_at: nowIso() })
+  
+  // Only patch domain state and sync metadata. 
+  // The BFF sync router will infer the action in outbox.ts
+  await doc.patch({ 
+    status, 
+    sync_status: 'pending', 
+    queued_at: nowIso() 
+  })
 }
 
 export async function markPunchItemSynced(localUuid: string, serverId: string): Promise<void> {

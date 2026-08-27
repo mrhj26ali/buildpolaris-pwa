@@ -20,6 +20,7 @@ export interface CreateTaskPayload {
   subject: string
   duration: number
   depends_on?: string
+  assigned_to?: string // DCMA Point 11: Resource/Responsibility assignment
 }
 
 export async function createTask(payload: CreateTaskPayload): Promise<TaskRecord> {
@@ -77,5 +78,13 @@ export async function listBaselines(project: string): Promise<ScheduleBaseline[]
   return bffRequest<ScheduleBaseline[]>(
     `/method/buildpolaris_bff.scheduling.api.list_baselines?project=${encodeURIComponent(project)}`,
     { method: 'GET' },
+  )
+}
+
+// NEW: Fetch the authoritative 14-point DCMA Health Check from the BFF
+export async function getDcmaHealthCheck(project: string): Promise<any> {
+  return bffRequest<any>(
+    `/method/buildpolaris_bff.scheduling.api.run_health_check?project=${encodeURIComponent(project)}`,
+    { method: 'GET' }
   )
 }

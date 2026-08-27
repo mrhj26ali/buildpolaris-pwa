@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth/useAuth'
 import { GlobalSyncIndicator } from '@/lib/ui/GlobalSyncIndicator'
+import { NotificationsBell } from '@/features/notifications/ui/NotificationsBell'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -44,7 +45,8 @@ export function HeaderBar() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <NotificationsBell />
         <GlobalSyncIndicator />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

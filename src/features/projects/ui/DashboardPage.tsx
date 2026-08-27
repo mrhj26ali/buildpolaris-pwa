@@ -5,10 +5,20 @@ import { ScheduleHealthBadge } from './ScheduleHealthBadge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoadingState, ErrorState, EmptyState } from '@/lib/ui/States'
 import { formatDate } from '@/lib/utils/date'
+import { useEffect } from 'react'
+import { syncEngine } from '@/lib/sync/SyncEngine' // <-- ADD THIS
 
 export default function DashboardPage() {
   const { activeProject } = useProjectContext()
   const { data: summary, isLoading, isError, error, refetch } = useProjectSummary(activeProject?.name)
+
+  // --- NEW: Auto-refetch dashboard when offline sync completes ---
+  useEffect(() => {
+    const unsubscribe = syncEngine.subscribe(() => {
+      refetch()
+    })
+    return () => unsubscribe()
+  }, [refetch])
 
   if (!activeProject) {
     return (

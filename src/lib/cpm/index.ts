@@ -9,23 +9,20 @@ export interface CpmComputation {
   health: DcmaHealthCheck
 }
 
-// Single entry point — both cpm.worker.ts (used by the UI for instant what-if
-// feedback) and any future test harness call exactly this function, so the
-// "client mirrors the server algorithm" claim in FR-2.3 has one place to stay
-// true from the client side.
-export function computeCpm(tasks: CpmTask[], dependencies: CpmDependency[]): CpmComputation {
+export function computeCpm(tasks: CpmTask[], dependencies: CpmDependency[], holidayOffsets: number[] = []): CpmComputation {
   const network = buildNetwork(tasks, dependencies)
-  const early = forwardPass(network)
-
+  const holidaySet = new Set(holidayOffsets)
+  
+  const early = forwardPass(network, holidaySet)
   let projectDuration = 0
   for (const finish of early.early_finish.values()) {
     projectDuration = Math.max(projectDuration, finish)
   }
-
-  const late = backwardPass(network, early, projectDuration)
+  
+  const late = backwardPass(network, early, projectDuration, holidaySet)
   const result = computeCriticalPath(network, early, late)
   const health = runDcmaHealthCheck(network, result, dependencies)
-
+  
   return { result, health }
 }
 

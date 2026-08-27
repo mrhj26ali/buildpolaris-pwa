@@ -42,3 +42,9 @@ export async function disableUser(email: string): Promise<void> {
     body: JSON.stringify({ email }),
   })
 }
+export async function updateUserProjects(email: string, projectNames: string[]): Promise<void> {
+  await bffRequest<unknown>('/method/buildpolaris_bff.identity.api.update_user_projects', {
+    method: 'POST',
+    body: JSON.stringify({ user: email, project_names: projectNames }),
+  })
+}

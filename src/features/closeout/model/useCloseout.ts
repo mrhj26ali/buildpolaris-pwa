@@ -10,6 +10,7 @@ import {
   uploadCloseoutDocument,
   getCloseoutReadiness,
   finalizeCloseout,
+  exportCloseoutPackage,
   type RequestLienWaiverPayload,
   type UploadCloseoutDocPayload,
 } from './closeoutApi'
@@ -99,5 +100,11 @@ export function useFinalizeCloseout(project: string, closingRecord: string) {
   return useMutation({
     mutationFn: () => finalizeCloseout(closingRecord),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.record(project) }),
+  })
+}
+
+export function useExportCloseoutPackage() {
+  return useMutation({
+    mutationFn: (closingRecord: string) => exportCloseoutPackage(closingRecord),
   })
 }

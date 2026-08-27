@@ -122,3 +122,13 @@ export async function finalizeCloseout(closingRecord: string): Promise<ClosingRe
     body: JSON.stringify({ closing_record: closingRecord }),
   })
 }
+
+export async function exportCloseoutPackage(closingRecord: string): Promise<{ file: string; file_url: string }> {
+  return bffRequest<{ file: string; file_url: string }>(
+    '/method/buildpolaris_bff.closeout.api.export_closeout_package',
+    {
+      method: 'POST',
+      body: JSON.stringify({ closing_record: closingRecord }),
+    }
+  )
+}

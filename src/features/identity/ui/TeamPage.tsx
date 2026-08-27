@@ -1,5 +1,6 @@
 import { useTeamMembers, useDisableUser } from '../model/useTeam'
 import { InviteUserDialog } from './InviteUserDialog'
+import { AssignProjectsDialog } from './AssignProjectsDialog' // <-- ADD THIS
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -54,16 +55,24 @@ export default function TeamPage() {
                   <Badge variant={member.status === 'Active' ? 'default' : 'outline'}>{member.status}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  {member.status !== 'Disabled' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="min-h-11"
-                      onClick={() => void disableMutation.mutateAsync(member.email)}
-                    >
-                      Disable
-                    </Button>
-                  )}
+                  <div className="flex justify-end gap-2">
+                    {/* ADD THIS: Project Assignment Manager */}
+                    <AssignProjectsDialog 
+                      userEmail={member.email} 
+                      currentProjects={member.assigned_projects || []} 
+                    />
+                    
+                    {member.status !== 'Disabled' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="min-h-11"
+                        onClick={() => void disableMutation.mutateAsync(member.email)}
+                      >
+                        Disable
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
